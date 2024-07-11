@@ -68,7 +68,7 @@ function AuthPage() {
           </h1>
           {!isSignUp ? (
             <p className="text-white mt-2 mb-6">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <span
                 onClick={() => setIsSignUp(true)}
                 className="text-main-orange underline cursor-pointer"

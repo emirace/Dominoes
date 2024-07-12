@@ -35,7 +35,7 @@ function RoomPreviewCard() {
         ))}
       </div>
 
-      <div className="mt-12 flex gap-3 relative">
+      <div className="mt-12 flex gap-3 items-center relative">
         {roomPreviewData.playerImagePreviewURL.map((url, index) => (
           <Image
             key={index}
@@ -47,7 +47,7 @@ function RoomPreviewCard() {
           />
         ))}
         <svg
-          className=" fill-white h-6 absolute right-0"
+          className=" fill-white h-8 absolute right-0 rounded-full p-1 hover:bg-white/10"
           focusable="false"
           aria-hidden="true"
           viewBox="0 0 24 24"

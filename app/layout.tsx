@@ -9,7 +9,7 @@ import "react-toastify/dist/ReactToastify.min.css";
 
 const fontPoppins = FontPoppins({
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "500", "600", "700", "800"],
   variable: "--font-poppins",
 });
 
@@ -35,7 +35,7 @@ export default function RootLayout({
         className={`antialiased font-open_sans ${fontPoppins.variable} ${fontOpenSans.variable}`}
       >
         <ToastContainer />
-        <div className="min-h-screen">{children}</div>
+        <div className="min-h-screen bg-dark-blue">{children}</div>
       </body>
     </html>
   );

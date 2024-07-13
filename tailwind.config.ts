@@ -10,6 +10,8 @@ const config: Config = {
     extend: {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "gradient-radial-at-top":
+          "radial-gradient(110% 100% at 30px top, var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
@@ -26,6 +28,12 @@ const config: Config = {
         poppins: ["var(--font-poppins)"],
         open_sans: ["var(--font-open-sans)"],
       },
+    },
+
+    screens: {
+      sm: "600px",
+      md: "900px",
+      xl: "1200px",
     },
   },
   plugins: [],

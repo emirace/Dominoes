@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { ExtendedRequest } from '../types';
 
 export default (
-  req: ExtendedRequest,
+  req: Request,
   res: Response<any, Record<string, any>>,
   next: NextFunction
 ) => {
@@ -17,6 +17,6 @@ export default (
   const verifiedJwt: any = jwt.verify(token, process.env.JWT_SECRET || '');
   console.log(verifiedJwt);
 
-  req.user = verifiedJwt;
+  (req as ExtendedRequest).user = verifiedJwt;
   next();
 };

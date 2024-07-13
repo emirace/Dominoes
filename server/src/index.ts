@@ -6,7 +6,7 @@ import { connectDB } from './db';
 import cors from 'cors';
 import { config } from 'dotenv';
 
-import AuthRoutes from './routes/Auth.route';
+import AuthRoutes from './routes/User.route';
 
 const app = express();
 
@@ -16,7 +16,7 @@ app.use(cors());
 config();
 connectDB();
 
-app.use('/api/auth', AuthRoutes);
+app.use('/api/user', AuthRoutes);
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {

@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 const URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
-const socket = io(URL, { autoConnect: false });
+const socket = io(URL, { autoConnect: true });
 
 socket.onAny((event, ...args) => {
   console.log(event, args);

@@ -4,12 +4,12 @@ import { ServerError, SuccessResponse } from '../helpers/ResponseHelpers';
 import bcrypt from 'bcryptjs';
 import signJWT from '../utils/signJWT';
 
-const AuthController = {
+const UserController = {
   register: asyncHandler(async (req, res) => {
     const { username, email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ $or: [{ email }, { username }] });
     if (user) {
-      return ServerError(res, 'Email already registered');
+      return ServerError(res, 'Email or username already registered');
     }
 
     const newUser = await User.create({
@@ -45,9 +45,30 @@ const AuthController = {
       res,
       { data: user, token: jwt },
       'Registration successful',
-      201
+      200
     );
+  }),
+
+  getLoggedInUser: asyncHandler(async (req, res) => {
+    const user = req.user;
+    if (!user) {
+      return ServerError(res, 'User not found', 404);
+    }
+    const { password, ...strippedUser } = user;
+
+    return SuccessResponse(res, strippedUser, 'User retrieved successful', 200);
+  }),
+
+  getUser: asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      return ServerError(res, 'User not found', 404);
+    }
+    const { password, ...strippedUser } = user.toObject();
+
+    return SuccessResponse(res, strippedUser, 'User retrieved successful', 200);
   }),
 };
 
-export default AuthController;
+export default UserController;

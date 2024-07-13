@@ -33,12 +33,12 @@ function AuthPage() {
         return;
       }
       const { data: res } = await API.post(
-        isSignUp ? "/auth/register" : "/auth/login",
+        isSignUp ? "/user/register" : "/user/login",
         data
       );
 
       toast.success("Authenticated successfully");
-      localStorage.setItem("token", res.token);
+      localStorage.setItem("token", res.data.token);
       router.push("/");
     } catch (err: any) {
       console.log(err);

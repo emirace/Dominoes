@@ -6,8 +6,11 @@ import Image from "next/image";
 import RoomPreviewCard from "../components/RoomPreviewCard";
 import { ArrowLeft, Mail } from "react-feather";
 import { Icons } from "@/components/icons";
+import useCurrentUser from "@/hooks/useCurrentUser";
 
 export default function Home() {
+  const { user } = useCurrentUser();
+  console.log(user);
   // const router = useRouter();
   // useEffect(() => {
   //   const token = localStorage.getItem("token");

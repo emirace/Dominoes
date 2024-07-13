@@ -1,4 +1,4 @@
-import mongoose, { Types, Document, Model } from 'mongoose';
+import mongoose, { Types, Document, Model, SchemaTypes } from 'mongoose';
 
 export interface User {
   username?: string;
@@ -25,9 +25,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    games: [
+      {
+        type: SchemaTypes.ObjectId,
+        ref: 'Game',
+      },
+    ],
   },
   { timestamps: true }
 );
 
-export default (mongoose.models?.User as unknown as Model<UserDocument>) ||
-  mongoose.model<User>('User', userSchema);
+export default mongoose.model<User>('User', userSchema);

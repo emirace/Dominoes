@@ -33,20 +33,20 @@ function AuthPage() {
         return;
       }
       const { data: res } = await API.post(
-        isSignUp ? "/register" : "/login",
+        isSignUp ? "/auth/register" : "/auth/login",
         data
       );
 
-      if (res.data) {
-        toast.success("Authenticated successfully");
-        localStorage.setItem("token", res.token);
-        router.push("/");
-      } else {
-        toast.error(res || "An error occurred. Please try again");
-      }
+      toast.success("Authenticated successfully");
+      localStorage.setItem("token", res.token);
+      router.push("/");
     } catch (err: any) {
       console.log(err);
-      toast.error(err.response?.data || err.message);
+      toast.error(
+        err.response.data.message ||
+          err.message ||
+          "An error occurred while logging you in"
+      );
     } finally {
       setIsLoading(false);
     }

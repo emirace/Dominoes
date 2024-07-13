@@ -1,4 +1,4 @@
-import mongoose, { Types, Document, Model } from "mongoose";
+import mongoose, { Types, Document, Model } from 'mongoose';
 
 export interface User {
   username?: string;
@@ -30,4 +30,4 @@ const userSchema = new mongoose.Schema(
 );
 
 export default (mongoose.models?.User as unknown as Model<UserDocument>) ||
-  mongoose.model<User>("User", userSchema);
+  mongoose.model<User>('User', userSchema);

@@ -21,6 +21,6 @@ export default (
     next();
   } catch (err) {
     // console.error(err);
-    next(err);
+    return next(new Error('You are not authenticated'));
   }
 };

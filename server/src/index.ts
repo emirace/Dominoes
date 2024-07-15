@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL || 'http://localhost:3000'],
+    origin: ['https://dominoes-six.vercel.app', 'http://localhost:3000'],
   })
 );
 config();
@@ -30,7 +30,7 @@ app.use('/api/game', GameRoutes);
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: [process.env.CLIENT_URL || 'http://localhost:3000'],
+    origin: ['https://dominoes-six.vercel.app', 'http://localhost:3000'],
   },
 });
 

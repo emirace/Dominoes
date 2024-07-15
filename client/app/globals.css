@@ -63,7 +63,7 @@ input:not(:placeholder-shown) ~ label {
 
 @layer base {
   a {
-    @apply text-main-orange underline;
+    @apply text-main-orange;
   }
   button {
     @apply bg-main-orange text-white rounded-2xl py-2 w-full transition-all uppercase border-none shadow-button-shadow hover:bg-[#a54e14];

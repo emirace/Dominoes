@@ -1,23 +1,65 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import RoomPreviewCard from "../components/RoomPreviewCard";
 import { ArrowLeft, Mail } from "react-feather";
 import { Icons } from "@/components/icons";
 import useCurrentUser from "@/hooks/useCurrentUser";
+import { useSocket } from "@/components/SocketProvider";
+import { toast } from "react-toastify";
+import { Game } from "@/types";
+import createAPI from "@/utils/api";
 
 export default function Home() {
   const { user } = useCurrentUser();
-  console.log(user);
-  // const router = useRouter();
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (!token) {
-  //     router.push("/auth");
-  //   }
-  // }, []);
+  const { socket } = useSocket();
+  const API = createAPI();
+  const router = useRouter();
+  const [games, setGames] = useState<Game[]>([]);
+
+  useEffect(() => {
+    if (socket) {
+      API.get(`/game/all`)
+        .then(({ data }) => {
+          console.log(data);
+          setGames(data.data);
+        })
+        .catch((err) => {
+          console.log(err);
+          toast.error("An error occurred");
+          // setTimeout(() => router.push("/"), 2000);
+        });
+
+      socket.on("gameCreated", ({ gameId }) => {
+        router.push(`/room/${gameId}`);
+      });
+      socket.on("newGameCreated", ({ game }) => {
+        setGames((prevGames) => [game, ...prevGames]);
+      });
+      socket.on("createGameError", () => {
+        toast.error("An error occurred while creating a game");
+      });
+
+      return () => {
+        socket.off("gameCreated");
+        socket.off("newGameCreated");
+        socket.off("createGameError");
+      };
+    }
+    // socket?.connect();
+    // const token = localStorage.getItem("token");
+    // if (!token) {
+    //   router.push("/auth");
+    // }
+  }, [socket]);
+
+  const handleClick = () => {
+    console.log("handle", socket);
+    socket?.emit("createGame");
+  };
+
   return (
     <div className="">
       <div className="absolute left-0 top-0 h-[35%] w-full ">
@@ -46,7 +88,10 @@ export default function Home() {
         </h1>
 
         <div className="pt-11 flex gap-3">
-          <button className="bg-main-orange rounded-2xl py-2 px-6 w-fit h-auto flex gap-3 text-nowrap items-center">
+          <button
+            onClick={handleClick}
+            className="bg-main-orange rounded-2xl py-2 px-6 w-fit h-auto flex gap-3 text-nowrap items-center"
+          >
             New game <Icons.gamepad />
           </button>
 
@@ -56,9 +101,9 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 pt-12">
-          <RoomPreviewCard />
-          <RoomPreviewCard />
-          <RoomPreviewCard />
+          {games.map((game, i) => (
+            <RoomPreviewCard key={i} game={game} />
+          ))}
         </div>
       </main>
     </div>

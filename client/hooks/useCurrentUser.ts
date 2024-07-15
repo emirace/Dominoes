@@ -1,10 +1,10 @@
 // src/hooks/useCurrentUser.ts
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
-import API from "@/utils/api";
 import { User } from "@/types";
+import createAPI from "@/utils/api";
 
 const useCurrentUser = () => {
+  const API = createAPI();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

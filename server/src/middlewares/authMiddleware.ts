@@ -15,7 +15,6 @@ export default (
   }
 
   const verifiedJwt: any = jwt.verify(token, process.env.JWT_SECRET || '');
-  console.log(verifiedJwt);
 
   (req as ExtendedRequest).user = verifiedJwt;
   next();

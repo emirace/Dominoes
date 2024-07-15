@@ -4,10 +4,11 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import API from "@/utils/api";
+import createAPI from "@/utils/api";
 
 function AuthPage() {
   const router = useRouter();
+  const API = createAPI();
   const [isSignUp, setIsSignUp] = useState(false);
   const [data, setData] = useState({
     username: "",

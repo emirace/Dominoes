@@ -1,9 +1,11 @@
 import mongoose, { Types, Document, Model, SchemaTypes } from 'mongoose';
+import { User } from './User.model';
 
 export interface Game {
-  Gamename?: string;
-  email: string;
-  password: string;
+  gameId: string;
+  isPrivate: boolean;
+  active: boolean;
+  players: User[];
 }
 
 export interface GameDocument extends Game, Document {
@@ -23,6 +25,22 @@ const gameSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
+    active: {
+      type: Boolean,
+      default: false,
+    },
+    // isRe: {
+    //   type: Boolean,
+    //   default: false,
+    // }
+    // isPrivate: {
+    //   type: Boolean,
+    //   default: false,
+    // }
   },
   { timestamps: true }
 );

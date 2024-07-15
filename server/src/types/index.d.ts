@@ -4,3 +4,10 @@ import { UserDocument } from '../models/User.model';
 export interface ExtendedRequest extends Request {
   user: UserDocument | null;
 }
+
+declare module 'node:http' {
+  interface IncomingMessage {
+    user: User;
+    token?: string;
+  }
+}

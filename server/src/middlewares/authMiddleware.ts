@@ -8,14 +8,19 @@ export default (
   res: Response<any, Record<string, any>>,
   next: NextFunction
 ) => {
-  const { authorization } = req.headers;
-  const token = authorization?.split(' ')[1];
-  if (!token) {
-    return ServerError(res, 'You are not authenticated', 401);
+  try {
+    const { authorization } = req.headers;
+    const token = authorization?.split(' ')[1];
+    if (!token) {
+      return ServerError(res, 'You are not authenticated', 401);
+    }
+
+    const verifiedJwt: any = jwt.verify(token, process.env.JWT_SECRET || '');
+
+    (req as ExtendedRequest).user = verifiedJwt;
+    next();
+  } catch (err) {
+    // console.error(err);
+    next(err);
   }
-
-  const verifiedJwt: any = jwt.verify(token, process.env.JWT_SECRET || '');
-
-  (req as ExtendedRequest).user = verifiedJwt;
-  next();
 };

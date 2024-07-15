@@ -14,7 +14,7 @@ const SocketController = {
           { gameId },
           { headers: { Authorization: `Bearer ${token}` } }
         )
-        .catch((err) => socket.emit('createGameError'));
+        .catch((err) => socket.emit('createGameError', err));
       if (typeof res === 'boolean') {
         return;
       }

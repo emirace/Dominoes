@@ -48,6 +48,13 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       console.log(event, args);
     });
 
+    newSocket.on("connect_error", (err) => {
+      if (window.location.href !== "/auth") {
+        console.log(err.message);
+        router.push("/auth");
+      }
+    });
+
     setSocket(newSocket);
 
     return () => {

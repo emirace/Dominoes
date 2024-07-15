@@ -35,6 +35,7 @@ const io = new Server(httpServer, {
 });
 
 io.engine.use(socketMiddleware);
+app.use(errorHandler);
 
 io.on('connection', (socket) => {
   // console.log('up');
@@ -55,13 +56,10 @@ io.on('connection', (socket) => {
     console.log('leave', room);
     socket.leave(room);
   });
+  socket.on('error', (err) => {
+    console.log(err);
+  });
 });
-
-io.on('error', (err) => {
-  console.log(err);
-});
-
-app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => console.log(`Listening on port: ${PORT}`));

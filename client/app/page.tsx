@@ -29,7 +29,7 @@ export default function Home() {
         .catch((err) => {
           console.log(err);
           toast.error("An error occurred");
-          // setTimeout(() => router.push("/"), 2000);
+          setTimeout(() => router.push("/"), 2000);
         });
 
       socket.on("gameCreated", ({ gameId }) => {

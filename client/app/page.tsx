@@ -12,6 +12,11 @@ import { toast } from "react-toastify";
 import { Game } from "@/types";
 import createAPI from "@/utils/api";
 
+const truncateAddress = (address?: string) => {
+  if (!address) return "";
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
+
 export default function Home() {
   const { user } = useCurrentUser();
   const { socket } = useSocket();
@@ -76,7 +81,10 @@ export default function Home() {
         <header className="flex justify-between py-6">
           <ArrowLeft />
 
-          <Mail />
+          <div className="flex gap-6 items-center">
+            <p>{truncateAddress(user?.address)}</p>
+            <Mail />
+          </div>
         </header>
 
         <h1 className="pt-6 text-white font-bold font-poppins text-[2rem] text-nowrap sm:text-[2.5rem] xl:text-[2.9rem]">
@@ -102,7 +110,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 pt-12">
           {games.map((game, i) => (
-            <RoomPreviewCard key={i} game={game} />
+            <RoomPreviewCard game={game} key={i} />
           ))}
         </div>
       </main>

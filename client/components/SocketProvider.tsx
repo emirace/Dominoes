@@ -51,7 +51,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     newSocket.on("connect_error", (err) => {
       if (window.location.pathname !== "/auth") {
         console.log(err.message, window.location.href);
-        router.push("/auth");
+        // router.push("/auth");
       }
     });
 

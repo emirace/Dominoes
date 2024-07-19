@@ -10,41 +10,108 @@ function AuthPage() {
   const router = useRouter();
   const API = createAPI();
   const [isSignUp, setIsSignUp] = useState(false);
-  const [data, setData] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const [showUsername, setShowUsername] = useState(false);
+  const [address, setAddress] = useState("");
+  const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setData((prevData) => ({ ...prevData, [e.target.name]: e.target.value }));
+  const verifySignature = async (
+    address: string,
+    nonce: string,
+    signedMessage: string
+  ) => {
+    try {
+      const recoveredAddress = await window.tronWeb.trx.verifyMessageV2(
+        nonce,
+        signedMessage
+      );
+      console.log(recoveredAddress, address);
+      return recoveredAddress === address;
+    } catch (error) {
+      console.error("Signature verification failed", error);
+      return false;
+    }
+  };
+
+  const authenticate = async (
+    address: string,
+    nonce: string,
+    signedMessage: string
+  ) => {
+    try {
+      if (address) {
+        const isValidSignature = await verifySignature(
+          address,
+          nonce,
+          signedMessage
+        );
+        if (!isValidSignature) {
+          toast.error("Invalid signature");
+          return;
+        }
+
+        const response = await API.post("/user/auth", {
+          address,
+          username,
+        });
+        if (!response.data.data.token) {
+          return setShowUsername(true);
+        }
+
+        localStorage.setItem("token", response.data.data.token);
+        console.log("JWT Token:", response.data.data.token);
+        router.push("/");
+      }
+    } catch (error: any) {
+      console.error("Authentication failed", error);
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Authentication failed"
+      );
+    }
   };
 
   const handleSubmit = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     try {
-      e.preventDefault();
-      setIsLoading(true);
-      console.log(data);
-      if (isSignUp && data.password !== data.confirmPassword) {
-        toast.error("Passwords do not match");
+      if (!window.tronWeb) {
+        toast.error("Please install the tronlink extension first");
         return;
       }
-      const { data: res } = await API.post(
-        isSignUp ? "/user/register" : "/user/login",
-        data
-      );
+      await window.tronWeb.request({ method: "tron_requestAccounts" });
+      const userAddress = window.tronWeb.defaultAddress.base58;
+      const nonce = `Sign this message to verify wallet ownership: ${Math.random()
+        .toString(36)
+        .substring(2)}`;
+      // const transaction = await window.tronWeb.transactionBuilder.sendTrx(
+      //   userAddress,
+      //   100,
+      //   nonce
+      // );
+      const signedMessage = await window.tronWeb.trx.signMessageV2(nonce);
+      console.log("Signed Transaction:", signedMessage);
+      authenticate(userAddress, nonce, signedMessage);
+      //   e.preventDefault();
+      //   setIsLoading(true);
+      //   console.log(data);
+      //   if (isSignUp && data.password !== data.confirmPassword) {
+      //     toast.error("Passwords do not match");
+      //     return;
+      //   }
+      //   const { data: res } = await API.post(
+      //     isSignUp ? "/user/register" : "/user/login",
+      //     data
+      //   );
 
-      toast.success("Authenticated successfully");
-      localStorage.setItem("token", res.data.token);
-      router.push("/");
+      //   toast.success("Authenticated successfully");
+      //   localStorage.setItem("token", res.data.token);
+      //   router.push("/");
     } catch (err: any) {
       console.log(err);
       toast.error(
-        err.response.data.message ||
+        err.response?.data?.message ||
           err.message ||
           "An error occurred while logging you in"
       );
@@ -67,74 +134,36 @@ function AuthPage() {
           <h1 className="text-white tracking-wider mt-4 font-bold font-poppins text-4xl">
             Dominoes
           </h1>
-          {!isSignUp ? (
-            <p className="text-white mt-2 mb-6">
-              Don&apos;t have an account?{" "}
-              <span
-                onClick={() => setIsSignUp(true)}
-                className="text-main-orange underline cursor-pointer"
-              >
-                Sign up
-              </span>
-            </p>
-          ) : (
-            <p className="text-white mt-2 mb-6">
-              Already signed up?{" "}
-              <span
-                onClick={() => setIsSignUp(false)}
-                className="text-main-orange underline cursor-pointer"
-              >
-                Log in
-              </span>
-            </p>
+          {!showUsername && (
+            <button
+              onClick={handleSubmit}
+              className="mt-6 px-8"
+              disabled={isLoading}
+            >
+              Authenticate with your tron link wallet
+            </button>
           )}
-          {isSignUp && (
-            <div className="relative">
-              <input
-                onChange={handleChange}
-                type="text"
-                placeholder=" "
-                name="username"
-                required
-              />
-              <label htmlFor="">Username</label>
+          {showUsername && (
+            <div className="mt-6">
+              <div className="relative">
+                <input
+                  onChange={(e) => setUsername(e.target.value)}
+                  type="text"
+                  placeholder=" "
+                  name="username"
+                  required
+                />
+                <label htmlFor="">Username</label>
+              </div>
+              <button
+                onClick={handleSubmit}
+                className="mt-8"
+                disabled={isLoading}
+              >
+                {isLoading ? "Loading..." : `Create account`}
+              </button>
             </div>
           )}
-          <div className="relative mt-4">
-            <input
-              onChange={handleChange}
-              type="email"
-              placeholder=" "
-              name="email"
-              required
-            />
-            <label htmlFor="">Email</label>
-          </div>
-          <div className="relative mt-4">
-            <input
-              onChange={handleChange}
-              type="password"
-              placeholder=" "
-              name="password"
-              required
-            />
-            <label htmlFor="">Password</label>
-          </div>
-          {isSignUp && (
-            <div className="relative mt-4">
-              <input
-                type="password"
-                placeholder=" "
-                name="confirmPassword"
-                onChange={handleChange}
-                required
-              />
-              <label htmlFor="">Confirm Password</label>
-            </div>
-          )}
-          <button onClick={handleSubmit} className="mt-8" disabled={isLoading}>
-            {isLoading ? "Loading..." : `Sign ${isSignUp ? "Up" : "In"}`}
-          </button>
           {/* <div className="my-6 flex justify-center items-center gap-4">
             <div className="h-px w-full bg-white/15"></div>
             <p className="">or</p>

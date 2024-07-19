@@ -3,17 +3,17 @@ import Image from "next/image";
 import { Game } from "@/types";
 import Link from "next/link";
 
-function RoomPreviewCard({ game }: { game: Game }) {
+function RoomPreviewCard({ game }: { game?: Game }) {
   return (
-    <Link href={`/room/${game.gameId}?join=true`}>
+    <Link href={`/room/${game?.gameId}?join=true`}>
       <div className="px-7 pt-8 pb-6 cursor-pointer bg-main-blue text-white rounded-3xl hover:bg-white/10">
-        <h3 className="text-lg font-semibold">{game.players[0].username}</h3>
+        <h3 className="text-lg font-semibold">{game?.players[0].username}</h3>
         <p className="font-medium">
           Waiting for players... {/*replace with roomPreviewData.roomStatus*/}
         </p>
 
         <div className="mt-12 flex gap-3 items-center relative">
-          {game.players.map((player, index) => (
+          {game?.players.map((player, index) => (
             <Image
               key={index}
               width={40}

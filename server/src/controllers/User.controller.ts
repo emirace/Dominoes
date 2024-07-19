@@ -28,6 +28,32 @@ const UserController = {
     );
   }),
 
+  authenticate: asyncHandler(async (req, res) => {
+    const { address, username } = req.body;
+    let user = await User.findOne({ address });
+    if (!user && username) {
+      let userWithUsername = await User.findOne({ username });
+      if (userWithUsername) {
+        return ServerError(res, 'Username already taken', 400);
+      }
+      user = await User.create({
+        username,
+        address,
+      });
+    } else if (!user) {
+      return SuccessResponse(res, { data: user }, 'No username set', 200);
+    }
+
+    const jwt = signJWT(user.toObject());
+
+    return SuccessResponse(
+      res,
+      { data: user, token: jwt },
+      'Registration successful',
+      201
+    );
+  }),
+
   login: asyncHandler(async (req, res) => {
     const { username, email, password } = req.body;
     const user = await User.findOne({ email });

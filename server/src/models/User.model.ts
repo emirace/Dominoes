@@ -2,28 +2,26 @@ import mongoose, { Types, Document, Model, SchemaTypes } from 'mongoose';
 
 export interface User {
   username?: string;
-  email: string;
+  address: string;
   password: string;
+  games: Types.ObjectId[];
 }
 
 export interface UserDocument extends User, Document {
   id: any;
 }
 
-const userSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema<User>(
   {
     username: {
       type: String,
       required: true,
+      unique: true,
     },
-    email: {
+    address: {
       type: String,
       required: true,
       unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
     },
     games: [
       {

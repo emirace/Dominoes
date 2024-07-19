@@ -80,7 +80,7 @@ function RoomPage({ params }: { params: { slug: string } }) {
   }, [socket]);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(window.location.href);
+    navigator.clipboard.writeText(window.location.href + "?join=true");
     toast.success("Link copied to clipboard");
   };
 
@@ -212,7 +212,7 @@ function RoomPage({ params }: { params: { slug: string } }) {
                 onClick={handleTextAreaCick}
                 readOnly
               >
-                {`http://localhost:3000/room/${params.slug}`}
+                {`http://localhost:3000/room/${params.slug}?join=true`}
               </textarea>
               <div className="relative h-px w-full rounded-full bg-gray-200 group-hover:h-0.5 peer-focus:h-0.5 after:w-full after:h-full after:absolute after:top-0 after:left-0 after:hidden  after:bg-main-orange after:peer-focus:block after:peer-focus:animate-expand" />
             </div>

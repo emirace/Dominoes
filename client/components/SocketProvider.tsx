@@ -31,7 +31,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     if (pathname === "/auth") {
       return;
     }
-    const token = window.localStorage.getItem("token") || "";
+    const token = window.localStorage.getItem("token");
     if (!token) {
       return router.push("/auth");
     }

@@ -61,7 +61,7 @@ function RoomPage({ params }: { params: { slug: string } }) {
         .catch((err) => {
           console.log(err);
           toast.error("Game not found");
-          // setTimeout(() => router.push("/"), 2000);
+          setTimeout(() => router.push("/"), 2000);
         });
 
       socket.on("gameJoined", (joinedGame) => {

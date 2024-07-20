@@ -65,6 +65,11 @@ export default function Home() {
     socket?.emit("createGame");
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/auth");
+  };
+
   return (
     <div className="">
       <div className="absolute left-0 top-0 h-[35%] w-full ">
@@ -83,6 +88,7 @@ export default function Home() {
 
           <div className="flex gap-6 items-center">
             <p>{truncateAddress(user?.address)}</p>
+            <button onClick={handleLogout}>Logout</button>
             <Mail />
           </div>
         </header>

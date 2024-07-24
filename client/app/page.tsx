@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import RoomPreviewCard from "../components/RoomPreviewCard";
+import PlayerProfileCard from "../components/PlayerProfileCard";
 import { ArrowLeft, Mail } from "react-feather";
 import { Icons } from "@/components/icons";
 import useCurrentUser from "@/hooks/useCurrentUser";
@@ -39,7 +40,6 @@ export default function Home() {
         !(dropdownRef.current as HTMLDivElement).contains(e.target as Node)
       ) {
         setDropdownToggle(false);
-        console.log(e.target);
       }
     };
 

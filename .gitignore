@@ -42,3 +42,6 @@ message.txt
 
 # config files 
 package-lock.json
+
+# server related 
+dist/

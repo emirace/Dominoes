@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import RoomPreviewCard from "../components/RoomPreviewCard";
+import PlayerProfileCard from "../components/PlayerProfileCard";
 import { ArrowLeft, Mail } from "react-feather";
 import { Icons } from "@/components/icons";
 import useCurrentUser from "@/hooks/useCurrentUser";
@@ -11,6 +12,7 @@ import { useSocket } from "@/components/SocketProvider";
 import { toast } from "react-toastify";
 import { Game } from "@/types";
 import createAPI from "@/utils/api";
+import { fail } from "assert";
 
 const truncateAddress = (address?: string) => {
   if (!address) return "";
@@ -23,6 +25,27 @@ export default function Home() {
   const API = createAPI();
   const router = useRouter();
   const [games, setGames] = useState<Game[]>([]);
+  const [dropdownToggle, setDropdownToggle] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const handleDropdownClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setDropdownToggle((prevState) => !prevState);
+  };
+
+  useEffect(() => {
+    const handleMousedown = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !(dropdownRef.current as HTMLDivElement).contains(e.target as Node)
+      ) {
+        setDropdownToggle(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleMousedown);
+    return () => document.removeEventListener("mousedown", handleMousedown);
+  }, []);
 
   useEffect(() => {
     if (socket) {
@@ -88,7 +111,28 @@ export default function Home() {
 
           <div className="flex gap-6 items-center">
             <p>{truncateAddress(user?.address)}</p>
-            <button onClick={handleLogout}>Logout</button>
+
+            <div
+              className="w-10 h-10 rounded-full bg-green-400 relative hover:cursor-pointer"
+              onClick={handleDropdownClick}
+              ref={dropdownRef}
+            >
+              {/* <Image width={40} height={40} src={'place an image url here'} alt={'profile pic'}  className="rounded-full w-10 h-10"/> */}
+              {dropdownToggle && (
+                <div className=" absolute right-0 top-12 bg-main-blue rounded-xl w-36  drop-shadow-xl">
+                  <ul className="*:h-10 *:  py-3">
+                    <li
+                      className=" capitalize text-white px-4 py-2 flex items-center hover:bg-white/15"
+                      onClick={handleLogout}
+                    >
+                      logout
+                    </li>
+                    {/* add more list item and use stopPropagation on event handlers to prevent the dropdown from closing whenever a list item is clicked*/}
+                  </ul>
+                </div>
+              )}
+            </div>
+
             <Mail />
           </div>
         </header>

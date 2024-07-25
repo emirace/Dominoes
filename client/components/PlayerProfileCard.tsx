@@ -1,19 +1,57 @@
 import { User } from "@/types";
 import Image from "next/image";
+import { Icons } from "./icons";
+import { useEffect, useRef, useState } from "react";
 
 function PlayerProfileCard({ player }: { player: User }) {
+
+  const [dropdownToggle, setDropdownToggle] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const handleDropdownClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setDropdownToggle((prevState) => !prevState);
+  };
+
+  useEffect(() => {
+    const handleMousedown = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !(dropdownRef.current as HTMLDivElement).contains(e.target as Node)
+      ) {
+        setDropdownToggle(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleMousedown);
+    return () => document.removeEventListener("mousedown", handleMousedown);
+  }, []);
+
   return (
     <div className="relative p-6 bg-main-blue shadow-card-shadow rounded-3xl min-w-60 md:w-60 ">
       <div>
-        <svg
-          className="absolute right-4 top-6 fill-white h-8 p-1 rounded-full hover:bg-white/10"
-          focusable="false"
-          aria-hidden="true"
-          viewBox="0 0 24 24"
-          data-testid="MoreVertIcon"
+        <div
+          className="relative"
+          onClick={handleDropdownClick}
+          ref={dropdownRef}
         >
-          <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"></path>
-        </svg>
+          <div className="absolute right-0 top-0">
+            <Icons.menu />
+          </div>
+          {dropdownToggle && (
+            <div className=" absolute right-0 top-10 bg-main-blue rounded-xl w-28  drop-shadow-2xl  shadow-button-shadow">
+              <ul className="*:h-10 *:  py-0">
+                <li
+                  className=" capitalize text-white px-4 py-2 flex items-center hover:bg-white/15 rounded-xl"
+                  // onClick={add a function to handle kick} 
+                >
+                  kick
+                </li>
+                {/* add more list item and use stopPropagation on event handlers to prevent the dropdown from closing whenever a list item is clicked*/}
+              </ul>
+            </div>
+          )}
+        </div>
 
         <Image
           src={
@@ -26,7 +64,7 @@ function PlayerProfileCard({ player }: { player: User }) {
         ></Image>
 
         <div className="pt-6 pb-3">
-          <h3 className="text-xl font-[600]">{player.username}</h3>
+          {/* <h3 className="text-xl font-[600]">{player.username}</h3> */}
         </div>
 
         <div className="bg-transparent border border-gray-500 rounded-full px-3  w-fit flex gap-1 items-center">

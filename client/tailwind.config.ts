@@ -25,6 +25,11 @@ const config: Config = {
         "main-blue": "#314157",
         "dark-blue": "#273446",
         "main-orange": "#ed701d",
+        "main-gray": "#617187",
+        "black-15": "rgba(0, 0, 0, 0.25)",
+      },
+      borderRadius: {
+        "9": "9px",
       },
       fontFamily: {
         poppins: ["var(--font-poppins)"],

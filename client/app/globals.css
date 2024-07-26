@@ -61,6 +61,23 @@ input:not(:placeholder-shown) ~ label {
   background: initial;
 }
 
+.tile {
+  user-select: none;
+  /* position: absolute; */
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  color: #617187;
+  background-image: url("/tiles.png");
+  background-position: -400px -140px;
+  background-size: 560px;
+  background-repeat: no-repeat;
+  width: 60px;
+  height: 120px;
+  cursor: auto;
+  opacity: 1;
+  transition: transform 450ms ease-in-out 16ms;
+}
+
 @layer base {
   a {
     @apply text-main-orange;

@@ -68,7 +68,7 @@ function PlayerProfileCard({
         ></Image>
 
         <div className="pt-6 pb-3 flex items-center gap-2">
-          <h3 className="text-xl font-[6  00]">{player.username}</h3>
+          <h3 className="text-xl font-[6  00]">{player?.username}</h3>
           {isReady && (
             <div className="bg-green-500 p-0.5 rounded-full flex items-center justify-center">
               <Check size={12} color="#fff" />{" "}

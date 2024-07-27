@@ -60,7 +60,7 @@ function AuthPage() {
 
         localStorage.setItem("token", response.data.data.token);
         console.log("JWT Token:", response.data.data.token);
-        router.push("/");
+        window.location.href = "/";
       }
     } catch (error: any) {
       console.error("Authentication failed", error);

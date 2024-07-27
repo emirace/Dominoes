@@ -2,8 +2,15 @@ import { User } from "@/types";
 import Image from "next/image";
 import { Icons } from "./icons";
 import { useEffect, useRef, useState } from "react";
+import { Check } from "react-feather";
 
-function PlayerProfileCard({ player }: { player: User }) {
+function PlayerProfileCard({
+  player,
+  isReady,
+}: {
+  player: User;
+  isReady: boolean;
+}) {
   const [dropdownToggle, setDropdownToggle] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -60,8 +67,13 @@ function PlayerProfileCard({ player }: { player: User }) {
           className="h-[72px] w-[72px] bg-green-400 rounded-2xl"
         ></Image>
 
-        <div className="pt-6 pb-3">
+        <div className="pt-6 pb-3 flex items-center gap-2">
           <h3 className="text-xl font-[6  00]">{player.username}</h3>
+          {isReady && (
+            <div className="bg-green-500 p-0.5 rounded-full flex items-center justify-center">
+              <Check size={12} color="#fff" />{" "}
+            </div>
+          )}
         </div>
 
         <div className="bg-transparent border border-gray-500 rounded-full px-3  w-fit flex gap-1 items-center">

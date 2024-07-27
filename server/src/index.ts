@@ -49,6 +49,10 @@ io.on('connection', (socket) => {
     console.log('joinGame', socket.rooms);
     SocketController.joinGame(gameId, socket, io, socket.request.token);
   });
+  socket.on('ready', ({ gameId, player }) => {
+    console.log('ready', socket.rooms);
+    player > -1 && io.to(gameId).emit('playerReady', player);
+  });
   socket.on('disconnect', () => {
     console.log(socket.id + 'has disconnected');
   });

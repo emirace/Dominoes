@@ -113,6 +113,7 @@ function AuthPage() {
       toast.error(
         err.response?.data?.message ||
           err.message ||
+          (typeof err === "string" && err) ||
           "An error occurred while logging you in"
       );
     } finally {

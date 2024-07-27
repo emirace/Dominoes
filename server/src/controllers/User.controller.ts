@@ -80,7 +80,7 @@ const UserController = {
     if (!user) {
       return ServerError(res, 'User not found', 404);
     }
-    const { password, ...strippedUser } = user;
+    const { password, ...strippedUser } = user.toObject();
 
     return SuccessResponse(res, strippedUser, 'User retrieved successful', 200);
   }),

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import Image from "next/image";
 import PlayerProfileCard from "../../../components/PlayerProfileCard";
 import { toast } from "react-toastify";
@@ -24,6 +24,28 @@ function RoomPage({ params }: { params: { slug: string } }) {
   const [player2Ready, setPlayer2Ready] = useState(false);
   const [dropdownToggle, setDropdownToggle] = useState(false);
   const dropdownRef = useRef(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const playerId = useMemo(
+    () => game?.players.findIndex((player) => player._id === user?._id) ?? -1,
+    [game?.players]
+  );
+
+  const startCountdown = () => {
+    setCountdown(10);
+    const intervalId = setInterval(() => {
+      setCountdown((prevCount) => {
+        if (!prevCount) {
+          return null;
+        }
+        if (prevCount <= 1) {
+          clearInterval(intervalId);
+          router.push(`/room/${params.slug}/game`);
+          return 0;
+        }
+        return prevCount - 1;
+      });
+    }, 1000);
+  };
 
   const handleTextAreaCick = (e: React.MouseEvent<HTMLTextAreaElement>) => {
     // e.target.select();
@@ -31,10 +53,10 @@ function RoomPage({ params }: { params: { slug: string } }) {
 
   const handleReady = () => {
     if (game?.players.length === 2) {
-      socket?.emit(
-        "ready",
-        game.players.findIndex((player) => player._id === user?._id)
-      );
+      socket?.emit("ready", {
+        gameId: slug,
+        player: playerId,
+      });
     }
   };
 
@@ -70,6 +92,13 @@ function RoomPage({ params }: { params: { slug: string } }) {
         console.log("gameJoined", joinedGame);
         setGame(joinedGame.game);
       });
+      socket.on("playerReady", (player) => {
+        player === 0
+          ? setPlayer1Ready(true)
+          : player === 1
+          ? setPlayer2Ready(true)
+          : null;
+      });
       socket.on("joinGameError", () => {
         toast.error("Game not found");
         setTimeout(() => router.push("/"), 2000);
@@ -80,6 +109,12 @@ function RoomPage({ params }: { params: { slug: string } }) {
       };
     }
   }, [socket]);
+
+  useEffect(() => {
+    if (player1Ready && player2Ready) {
+      startCountdown();
+    }
+  }, [player1Ready, player2Ready]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(window.location.href + "?join=true");
@@ -182,17 +217,27 @@ function RoomPage({ params }: { params: { slug: string } }) {
         <div className="pt-6">
           <h1 className="pt-5 font-bold font-poppins text-[2rem] text-nowrap sm:text-[2.5rem] xl:text-5xl">
             {game.players.length} of 2 players,{" "}
-            <span className="pt-5 font-medium text-2xl sm:text-3xl md:text-4xl  text-nowrap block">
-              {game.players.length > 1
-                ? "Waiting for ready..."
-                : "Waiting for players..."}
-            </span>
+            {countdown && player1Ready && player2Ready ? (
+              <span className="pt-5 font-medium text-2xl sm:text-3xl md:text-4xl  text-nowrap block">
+                Game starts in {countdown}
+              </span>
+            ) : (
+              <span className="pt-5 font-medium text-2xl sm:text-3xl md:text-4xl  text-nowrap block">
+                {game.players.length > 1
+                  ? "Waiting for players to set ready..."
+                  : "Waiting for players to join..."}
+              </span>
+            )}
           </h1>
         </div>
 
         <div className="pt-11 flex gap-3 items-center">
           <button
-            disabled={game.players.length < 2}
+            disabled={
+              game.players.length < 2 ||
+              (playerId === 0 && player1Ready) ||
+              (playerId === 1 && player2Ready)
+            }
             onClick={handleReady}
             className="bg-main-orange disabled:bg-[#424C5C] disabled:shadow-none disabled:pointer-events-none disabled:opacity-40 rounded-2xl py-2 px-6 w-fit h-auto flex gap-3 text-nowrap items-center"
           >
@@ -239,7 +284,11 @@ function RoomPage({ params }: { params: { slug: string } }) {
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 md:w-fit pt-12">
           {game.players.map((player, i) => (
-            <PlayerProfileCard key={i} player={player} />
+            <PlayerProfileCard
+              isReady={i === 0 ? player1Ready : player2Ready}
+              key={i}
+              player={player}
+            />
           ))}
         </div>
 

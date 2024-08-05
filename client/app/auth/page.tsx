@@ -60,7 +60,7 @@ function AuthPage() {
 
         localStorage.setItem("token", response.data.data.token);
         console.log("JWT Token:", response.data.data.token);
-        router.push("/");
+        window.location.href = "/";
       }
     } catch (error: any) {
       console.error("Authentication failed", error);
@@ -113,6 +113,7 @@ function AuthPage() {
       toast.error(
         err.response?.data?.message ||
           err.message ||
+          (typeof err === "string" && err) ||
           "An error occurred while logging you in"
       );
     } finally {

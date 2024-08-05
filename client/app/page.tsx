@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import RoomPreviewCard from "../components/RoomPreviewCard";
@@ -20,10 +20,11 @@ const truncateAddress = (address?: string) => {
 };
 
 export default function Home() {
-  const { user } = useCurrentUser();
+  const { user, refetch } = useCurrentUser();
   const { socket } = useSocket();
   const API = createAPI();
   const router = useRouter();
+  const pathname = usePathname();
   const [games, setGames] = useState<Game[]>([]);
   const [dropdownToggle, setDropdownToggle] = useState(false);
   const dropdownRef = useRef(null);
@@ -34,6 +35,9 @@ export default function Home() {
   };
 
   useEffect(() => {
+    if (!user) {
+      refetch();
+    }
     const handleMousedown = (e: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -57,7 +61,7 @@ export default function Home() {
         .catch((err) => {
           console.log(err);
           toast.error("An error occurred");
-          setTimeout(() => router.push("/"), 2000);
+          setTimeout(() => pathname !== "/auth" && router.push("/auth"), 2000);
         });
 
       socket.on("gameCreated", ({ gameId }) => {

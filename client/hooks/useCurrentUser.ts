@@ -2,9 +2,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@/types";
 import createAPI from "@/utils/api";
+import { usePathname } from "next/navigation";
 
 const useCurrentUser = () => {
   const API = createAPI();
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

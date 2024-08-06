@@ -29,14 +29,7 @@ function DeckTile({
   // console.log(tile, "component");
   return (
     <div ref={drag} className={` pl-2 ${isDragging && "opacity-0"}`}>
-      <DominoesTile
-        config={{
-          dots: tile,
-          active: false,
-          scale: 1,
-          tilt: 0,
-        }}
-      />
+      <DominoesTile tile={tile} />
     </div>
   );
 }

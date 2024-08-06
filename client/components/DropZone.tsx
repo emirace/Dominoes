@@ -13,9 +13,9 @@ function DropZone({
       isOver: monitor.isOver(),
     }),
     drop: (item, monitor) => {
-      console.log(monitor.getClientOffset(), monitor.getInitialClientOffset(), monitor.getDropResult())
-      const coordinates = monitor.getClientOffset()
-      coordinates && initailSetAnchor(item.tile, [coordinates.x, coordinates.y])
+      const coordinates = monitor.getClientOffset();
+      coordinates &&
+        initailSetAnchor(item.tile, [coordinates.x, coordinates.y]);
     },
     canDrop: (item: any) =>
       acceptedDotCount.some((dot: number) => item.tile.includes(dot)),

@@ -22,42 +22,37 @@ function GameBoard() {
         coordinates[0] - boardBoundingPosition?.x,
         coordinates[1] - boardBoundingPosition?.y,
       ];
-
-      console.log("tileCoordinate", tileCoordinate);
-
       setAnchors((prevState) => [
         ...prevState,
-        { coordinates: tileCoordinate, tile, tilt: 0 },
+        { coordinates: tileCoordinate, tile, tilt: 0, scale: 1 },
       ]);
     }
   };
 
-  const finalSetAnchor = (tile: numberPair, coordinates: numberPair) => {
-    setAnchors((prevState) =>
-      prevState.map((state) =>
-        state.tile.every((currentTile, i) => currentTile === tile[i]) ? ({...state, finalCoordinates: [350, 300]}) : state
-      )
-    );
-  };
-
   useEffect(() => {
-    console.log(anchors, anchors[anchors.length - 1]?.finalCoordinates);
-    if (anchors.length > 0 && !anchors[anchors.length - 1].finalCoordinates) {
-      finalSetAnchor(
-        anchors[anchors.length - 1].tile,
-        anchors[anchors.length - 1].coordinates
-      );
-    }
-  }, [anchors]);
+    const finalSetAnchor = () => {
+      if (anchors.length) {
+        setAnchors((prevState) =>
+          prevState.map((anchor, index) =>
+            index !== anchors.length - 1
+              ? anchor
+              : { ...anchor, coordinates: [60, 40], tilt: 90, scale: .8 }
+          )
+        );
+      }
+    };
+
+    finalSetAnchor();
+  }, [anchors.length]);
 
   return (
     <div
       id="play-board"
       ref={playBoard}
-      className="absolute top-10 h-3/4 w-full bg-green-500"
+      className="absolute top-10 h-3/4 w-full"
     >
-      {anchors.map(({finalCoordinates, coordinates, tile, tilt }, index) => (
-        <Anchor key={index} {...{ finalCoordinates, coordinates, tile, tilt }} />
+      {anchors.map(({ coordinates, tile, tilt, scale }, index) => (
+        <Anchor key={index} {...{ coordinates, tile, tilt, scale }} />
       ))}
       {dropZones.map(({ position, acceptedDotCount }, index) => (
         <DropZone

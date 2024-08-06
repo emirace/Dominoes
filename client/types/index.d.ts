@@ -12,19 +12,14 @@ export interface Game {
 }
 
 export interface AnchorProp {
-  finalCoordinates?: numberPair
   coordinates: numberPair;
   tile: numberPair;
   tilt: number;
+  scale: number;
 }
 
 export interface DominoesTileProps {
-  config: {
-    dots: numberPair;
-    active: Boolean;
-    scale: number | undefined;
-    tilt: number | undefined;
-  };
+  tile: numberPair;
 }
 
 export type numberPair = [number, number];

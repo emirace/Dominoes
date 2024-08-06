@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useMemo } from "react";
 import { DominoesTileProps } from "@/types";
 
 function calcTilePosition(dots: [number, number]): [number, number] {
-  console.log("calculatng");
+  // console.log("calculatng");
   if (dots[1] > dots[0] || dots.some((dot: number) => dot < 0 || dot > 6)) {
     return [4, 1];
   } else {
@@ -13,17 +13,14 @@ function calcTilePosition(dots: [number, number]): [number, number] {
   }
 }
 
-function DominoesTile({ config }: DominoesTileProps) {
-  const { dots, active} = config;
+function DominoesTile({ tile }: DominoesTileProps) {
   const ref = useRef<HTMLDivElement | null>(null);
-  const tilePosition = useMemo(() => calcTilePosition(dots), [dots]); // caches the result for dots and prevent calulation on re-render
+  const tilePosition = useMemo(() => calcTilePosition(tile), [tile]);
 
   return (
     <div
       ref={ref}
-      className={`tile rounded-2xl box-content ${
-        active ? "border-4 border-main-orange/65" : ""
-      }`}
+      className="tile rounded-xl"
       style={{
         backgroundPosition: `-${80 * tilePosition[1]}px -${
           140 * tilePosition[0]

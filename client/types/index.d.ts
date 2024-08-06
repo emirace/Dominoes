@@ -30,11 +30,24 @@ export interface DropZoneProp {
   initailSetAnchor: (tile: numberPair, coordinates: numberPair) => void;
 }
 
-export interface DraggedTileProp {
-  index: number;
+export interface tileAlignSpecType {
+  root: boolean;
+  orientation: string;
   tile: numberPair;
-  addTileToDeck: Function;
-  origin: { X: number; Y: number };
+  isDouble: boolean;
+  coordinates: numberPair;
+  coordinates: numberPair;
+  connectedAt: [[number], [number]];
+  connections: tileAlignSpec[];
+  setConnection: (
+    to: number,
+    tile: numberPair,
+    scale: number,
+    branchHeight: number,
+    branchWidth: number,
+    maxLayoutHeight: number,
+    maxLayoutWidth: number
+  ) => void;
 }
 
 declare global {

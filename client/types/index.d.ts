@@ -28,6 +28,8 @@ export interface DropZoneProp {
   acceptedDotCount: number[];
   position: numberPair;
   initailSetAnchor: (tile: numberPair, coordinates: numberPair) => void;
+  activeHover: React.MutableRefObject<number>;
+  index: number;
 }
 
 export interface tileAlignSpecType {

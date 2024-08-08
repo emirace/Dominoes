@@ -5,7 +5,7 @@ const TopZLayer = () => {
   const { display, item, style } = usePreview();
   if (!display) return;
   return (
-    <div style={style}>
+    <div style={{...style, zIndex: 2}}>
       <DominoesTile tile={item.tile} />
     </div>
   );

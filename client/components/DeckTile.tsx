@@ -1,36 +1,58 @@
 import React, { useRef, useEffect } from "react";
 import DominoesTile from "./DominoesTile";
-import { useDrag } from "react-dnd";
-import { getEmptyImage } from "react-dnd-html5-backend";
-import { numberPair } from "@/types";
+import { useDrag } from "@use-gesture/react";
+import { useSpring, animated, config } from "@react-spring/web";
+import { tileType } from "@/types";
+import { useGameContext } from "./GameProvider";
 
 function DeckTile({
-  index,
   tile,
   onDropComplete,
 }: {
-  index: number;
-  tile: numberPair;
+  tile: tileType;
   onDropComplete: any;
 }) {
-  const [{ isDragging }, drag, preview] = useDrag(() => ({
-    type: "DOMINOTILE",
-    item: { index, tile },
-    end: (_, monitor) => monitor.didDrop() && onDropComplete(index),
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
+  const { draggedTile, setDraggedTile, setRecentlyDroppedTile } =
+    useGameContext();
+
+  const [springProp, api] = useSpring(() => ({
+    transform: "translate(0px, 0px)",
+    opacity: 1,
+    config: config.default,
   }));
 
-  useEffect(() => {
-    preview(getEmptyImage(), { captureDraggingState: true });
-  }, [preview]);
+  const bind = useDrag(({ movement: [x, y], active }) => {
+    if (!draggedTile && active) setDraggedTile(tile);
+    else if (!active)
+      setTimeout(() => {
+        setRecentlyDroppedTile((prevDroppedTile) => {
+          if (prevDroppedTile?.id === tile.id) {
+            api.start({
+              opacity: 0,
+              immediate: true,
+            });
+            onDropComplete(tile);
+            return null;
+          } else
+            api.start({
+              transform: `translate(0, 0)`,
+            });
+          return prevDroppedTile;
+        });
 
-  // console.log(tile, "component");
+        setDraggedTile(null);
+      }, 0);
+    else
+      api.start({
+        transform: `translate(${x}px, ${y}px)`,
+        immediate: active,
+      });
+  });
+
   return (
-    <div ref={drag} className={` pl-2 ${isDragging && "opacity-0"}`}>
-      <DominoesTile tile={tile} />
-    </div>
+    <animated.div {...bind()} style={springProp} className={`touch-none z-10`}>
+      <DominoesTile {...{ tile }} />
+    </animated.div>
   );
 }
 

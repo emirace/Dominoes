@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useMemo } from "react";
+import React, { useRef, useMemo } from "react";
 import { DominoesTileProps } from "@/types";
 
 function calcTilePosition(dots: [number, number]): [number, number] {
@@ -13,7 +13,7 @@ function calcTilePosition(dots: [number, number]): [number, number] {
   }
 }
 
-function DominoesTile({ tile }: DominoesTileProps) {
+function DominoesTile({ tile: {tile} }: DominoesTileProps) {
   const ref = useRef<HTMLDivElement | null>(null);
   const tilePosition = useMemo(() => calcTilePosition(tile), [tile]);
 

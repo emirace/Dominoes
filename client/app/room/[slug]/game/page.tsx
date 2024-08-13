@@ -2,17 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState, useRef } from "react";
 import { ArrowLeft } from "react-feather";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import Deck from "../../../../components/Deck";
-import TopZLayer from "../../../../components/TopZLayer";
-import GameBoard from "../../../../components/GameBoard";
+import Deck from "@/components/Deck";
+import GameBoard from "@/components/GameBoard";
+import { GameProvider } from "@/components/GameProvider";
 
 function GamePage() {
   return (
-    <DndProvider backend={HTML5Backend}>
+    <GameProvider>
       <div
         id="game"
         className='bg-dark-blue bg-[url("/game-bg.png")] relative bg-cover justify-center bg-center flex items-end min-w-screen min-h-screen'
@@ -102,9 +99,9 @@ function GamePage() {
             <p className="text-xs text-[#afb7c1]">points</p>
           </div>
         </div>
-        <TopZLayer />
+        {/* <TopZLayer /> */}
       </div>
-    </DndProvider>
+    </GameProvider>
   );
 }
 

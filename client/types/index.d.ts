@@ -13,31 +13,43 @@ export interface Game {
 
 export interface AnchorProp {
   coordinates: numberPair;
-  tile: numberPair;
+  tile: tileType;
   tilt: number;
   scale: number;
-}
-
-export interface DominoesTileProps {
-  tile: numberPair;
+  initailSetAnchor: (
+    tile: tileType,
+    coordinates: numberPair,
+    id: number
+  ) => void;
+  activeHover: React.MutableRefObject<number|null>;
 }
 
 export type numberPair = [number, number];
+export type tileType = { id: number; tile: numberPair };
 
+export interface DominoesTileProps {
+  tile: tileType;
+}
 export interface DropZoneProp {
   acceptedDotCount: number[];
-  position: numberPair;
-  initailSetAnchor: (tile: numberPair, coordinates: numberPair) => void;
-  activeHover: React.MutableRefObject<number>;
-  index: number;
+  position: numberPair | null;
+  initailSetAnchor: (
+    tile: tileType,
+    coordinates: numberPair,
+    id: number
+  ) => void;
+  activeHover: React.MutableRefObject<number|null>;
+  id: number;
+  scale: number;
 }
 
 export interface tileAlignSpecType {
+  id: number;
   root: boolean;
   orientation: string;
+  scale: number;
   tile: numberPair;
   isDouble: boolean;
-  coordinates: numberPair;
   coordinates: numberPair;
   connectedAt: [[number], [number]];
   connections: tileAlignSpec[];
@@ -50,6 +62,18 @@ export interface tileAlignSpecType {
     maxLayoutHeight: number,
     maxLayoutWidth: number
   ) => void;
+  attach: any;
+  calcDropLocation: (vec: numberPair) => string | undefined;
+}
+
+interface GameContextType {
+  draggedTile: tileType | null;
+  setDraggedTile: React.Dispatch<React.SetStateAction<TileType>>;
+  recentlyDroppedTile: tileType | null;
+  setRecentlyDroppedTile: React.Dispatch<React.SetStateAction<tileType | null>>;
+  playerDeck: tileType[];
+  setPlayerDeck: React.Dispatch<React.SetStateAction<tileType[]>>;
+  setTile: (tiles: numberPair[]) => void;
 }
 
 declare global {

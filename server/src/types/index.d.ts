@@ -5,6 +5,8 @@ export interface ExtendedRequest extends Request {
   user: UserDocument | null;
 }
 
+export type numberPair = [number, number];
+
 declare module 'node:http' {
   interface IncomingMessage {
     user: User;

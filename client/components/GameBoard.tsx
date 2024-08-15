@@ -121,7 +121,7 @@ function getLayoutHeight(scale: number, peakYCoordinates: numberPair): number {
 
 function GameBoard() {
   const [dropZones, setDropZones] = useState<
-    Omit<DropZoneProp, "initailSetAnchor" | "activeHover"| "index">[]
+    Omit<DropZoneProp, "initailSetAnchor" | "activeHover" | "index">[]
   >([
     { acceptedDotCount: [1, 2, 3, 4, 5, 6], position: [0.5, 0.5] },
     { acceptedDotCount: [1, 2, 3, 4, 5, 6], position: [0.45, 0.45] },
@@ -157,10 +157,24 @@ function GameBoard() {
           prevState.map((anchor, index) =>
             index !== anchors.length - 1
               ? anchor
-              : {
+              : prevState.length === 1
+              ? {
                   ...anchor,
                   coordinates: [midX - 30, midY - 60],
                   tilt: 90,
+                  scale: 0.9,
+                }
+              : prevState.length === 2
+              ? {
+                  ...anchor,
+                  coordinates: [midX - 114, midY - 60],
+                  tilt: 0,
+                  scale: 0.9,
+                }
+              : {
+                  ...anchor,
+                  coordinates: [midX + 54, midY - 60],
+                  tilt: 0,
                   scale: 0.9,
                 }
           )
@@ -183,7 +197,13 @@ function GameBoard() {
       {dropZones.map(({ position, acceptedDotCount }, index) => (
         <DropZone
           key={index}
-          {...{ position, acceptedDotCount, initailSetAnchor, activeHover, index }}
+          {...{
+            position,
+            acceptedDotCount,
+            initailSetAnchor,
+            activeHover,
+            index,
+          }}
         />
       ))}
     </div>

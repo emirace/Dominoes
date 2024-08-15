@@ -27,41 +27,41 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
   const pathname = usePathname();
   const router = useRouter();
 
-  // useEffect(() => {
-  //   if (pathname === "/auth") {
-  //     return;
-  //   }
-  //   const token = window.localStorage.getItem("token");
-  //   if (!token) {
-  //     return router.push("/auth");
-  //   }
+  useEffect(() => {
+    if (pathname === "/auth") {
+      return;
+    }
+    const token = window.localStorage.getItem("token");
+    if (!token) {
+      return router.push("/auth");
+    }
 
-  //   const URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
-  //   const newSocket = io(URL, {
-  //     autoConnect: true,
-  //     extraHeaders: {
-  //       authorization: `Bearer ${token}`,
-  //     },
-  //   });
+    const URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+    const newSocket = io(URL, {
+      autoConnect: true,
+      extraHeaders: {
+        authorization: `Bearer ${token}`,
+      },
+    });
 
-  //   newSocket.onAny((event, ...args) => {
-  //     console.log(event, args);
-  //   });
+    newSocket.onAny((event, ...args) => {
+      console.log(event, args);
+    });
 
-  //   newSocket.on("connect_error", (err) => {
-  //     if (window.location.pathname !== "/auth") {
-  //       console.log(err.message, window.location.href);
-  //       router.push("/auth");
-  //     }
-  //   });
+    newSocket.on("connect_error", (err) => {
+      if (window.location.pathname !== "/auth") {
+        console.log(err.message, window.location.href);
+        router.push("/auth");
+      }
+    });
 
-  //   setSocket(newSocket);
+    setSocket(newSocket);
 
-  //   return () => {
-  //     newSocket.disconnect();
-  //     newSocket.close();
-  //   };
-  // }, []);
+    return () => {
+      newSocket.disconnect();
+      newSocket.close();
+    };
+  }, []);
 
   return (
     <SocketContext.Provider value={{ socket }}>

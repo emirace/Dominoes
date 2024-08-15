@@ -28,7 +28,10 @@ function DeckTile({
 
   // console.log(tile, "component");
   return (
-    <div ref={drag} className={` pl-2 ${isDragging && "opacity-0"}`}>
+    <div
+      ref={drag}
+      className={`transition-all pl-2 ${isDragging && "opacity-0"}`}
+    >
       <DominoesTile tile={tile} />
     </div>
   );

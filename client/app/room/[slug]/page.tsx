@@ -31,7 +31,11 @@ function RoomPage({ params }: { params: { slug: string } }) {
   );
 
   const startCountdown = () => {
-    setCountdown(10);
+    if (!socket) {
+      toast.error("Socket disconnected");
+      return;
+    }
+    setCountdown(3);
     const intervalId = setInterval(() => {
       setCountdown((prevCount) => {
         if (!prevCount) {
@@ -39,6 +43,7 @@ function RoomPage({ params }: { params: { slug: string } }) {
         }
         if (prevCount <= 1) {
           clearInterval(intervalId);
+          socket.emit("startGame", { gameId: params.slug, playerId });
           router.push(`/room/${params.slug}/game`);
           return 0;
         }
@@ -106,6 +111,8 @@ function RoomPage({ params }: { params: { slug: string } }) {
 
       return () => {
         socket.off("gameJoined");
+        socket.off("playerReady");
+        socket.off("joinGameError");
       };
     }
   }, [socket]);

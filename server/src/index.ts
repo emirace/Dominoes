@@ -49,9 +49,17 @@ io.on('connection', (socket) => {
     console.log('joinGame', socket.rooms);
     SocketController.joinGame(gameId, socket, io, socket.request.token);
   });
+  socket.on('initialTiles', ({ gameId, initialTiles }) => {
+    console.log('joinGame', initialTiles);
+    SocketController.joinGame(gameId, socket, io, socket.request.token);
+  });
   socket.on('ready', ({ gameId, player }) => {
     console.log('ready', socket.rooms);
     player > -1 && io.to(gameId).emit('playerReady', player);
+  });
+  socket.on('startGame', ({ gameId, playerId }) => {
+    console.log('start', socket.rooms);
+    SocketController.startGame(io, gameId, playerId);
   });
   socket.on('disconnect', () => {
     console.log(socket.id + 'has disconnected');

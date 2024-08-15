@@ -22,13 +22,14 @@ function DeckTile({
   }));
 
   const bind = useDrag(({ movement: [x, y], active }) => {
+    // console.log(tile)
     if (!draggedTile && active) setDraggedTile(tile);
     else if (!active)
       setTimeout(() => {
         setRecentlyDroppedTile((prevDroppedTile) => {
           if (prevDroppedTile?.id === tile.id) {
             api.start({
-              opacity: 0,
+              opacity: 1,
               immediate: true,
             });
             onDropComplete(tile);
@@ -48,9 +49,8 @@ function DeckTile({
         immediate: active,
       });
   });
-
   return (
-    <animated.div {...bind()} style={springProp} className={`touch-none z-10`}>
+    <animated.div {...bind()} style={springProp} className={`touch-none z-10 relative`}>
       <DominoesTile {...{ tile }} />
     </animated.div>
   );

@@ -13,7 +13,7 @@ function calcTilePosition(dots: [number, number]): [number, number] {
   }
 }
 
-function DominoesTile({ tile: {tile} }: DominoesTileProps) {
+function DominoesTile({ tile: {tile}, size = "normal"}: DominoesTileProps) {
   const ref = useRef<HTMLDivElement | null>(null);
   const tilePosition = useMemo(() => calcTilePosition(tile), [tile]);
 
@@ -25,6 +25,7 @@ function DominoesTile({ tile: {tile} }: DominoesTileProps) {
         backgroundPosition: `-${80 * tilePosition[1]}px -${
           140 * tilePosition[0]
         }px`,
+        transform: size === "small" ? 'scale(0.5) translate(-50%, -50%)' : '',
       }}
     />
   );

@@ -15,13 +15,13 @@ function Anchor({
   const springProp = useSpring({
     top: coordinates[1],
     left: coordinates[0],
-    transform: `scale(${scale}) rotate(${tilt})`,
+    transform: `scale(${scale}) rotate(${tilt}deg) translate(-50%, -50%)`,
     config: config.stiff,
   });
 
   return (
     <animated.div
-      className="absolute w-fit top"
+      className="absolute w-fit top "
       style={springProp}
     >
       <DominoesTile tile={tile} />

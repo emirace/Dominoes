@@ -1,3 +1,5 @@
+import { RectReadOnly } from "react-use-measure";
+
 export interface User {
   _id: number;
   username: string;
@@ -21,7 +23,7 @@ export interface AnchorProp {
     coordinates: numberPair,
     id: number
   ) => void;
-  activeHover: React.MutableRefObject<number|null>;
+  activeHover: React.MutableRefObject<number | null>;
 }
 
 export type numberPair = [number, number];
@@ -29,6 +31,7 @@ export type tileType = { id: number; tile: numberPair };
 
 export interface DominoesTileProps {
   tile: tileType;
+  size?: string
 }
 export interface DropZoneProp {
   acceptedDotCount: number[];
@@ -38,7 +41,7 @@ export interface DropZoneProp {
     coordinates: numberPair,
     id: number
   ) => void;
-  activeHover: React.MutableRefObject<number|null>;
+  activeHover: React.MutableRefObject<number | null>;
   id: number;
   scale: number;
 }
@@ -73,7 +76,15 @@ interface GameContextType {
   setRecentlyDroppedTile: React.Dispatch<React.SetStateAction<tileType | null>>;
   playerDeck: tileType[];
   setPlayerDeck: React.Dispatch<React.SetStateAction<tileType[]>>;
-  setTile: (tiles: numberPair[]) => void;
+  selectFromBoneYard: () => tileType;
+  activateBoneYard: boolean;
+  setActivateBoneYard: React.Dispatch<React.SetStateAction<boolean>>;
+  drawFromBoneYardClb: React.MutableRefObject<
+    ((position: numberPair) => void) | null
+  >;
+  requestTile: (callback: (position: numberPair) => void) => void;
+  permits: number[];
+  setPermits: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
 declare global {

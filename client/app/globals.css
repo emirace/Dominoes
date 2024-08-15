@@ -75,7 +75,6 @@ input:not(:placeholder-shown) ~ label {
   height: 120px;
   cursor: auto;
   opacity: 1;
-  transition: transform 450ms ease-in-out 16ms;
 }
 
 @layer base {

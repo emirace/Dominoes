@@ -120,14 +120,14 @@ function tileAlignSpec(
       (point, index) => point - vec[index]
     ) as numberPair;
     if (this.orientation === "vertical") {
-      console.log(vec1);
-      const angle = calcVectorAngle(vec1, [0, 1]);
+      const angle = calcVectorAngle(vec1, [0, 100]);
       if (angle >= 0 && angle <= 45) return "top";
       else if (angle > 45 && vec1[0] > 0) return "right";
       else if (angle >= 135) return "bottom";
       else if (angle > 45 && vec1[0] < 0) return "left";
     } else {
-      const angle = calcVectorAngle(vec1, [1, 0]);
+      const angle = calcVectorAngle(vec1, [100, 0]);
+      console.log(angle, this.orientation);
       if (angle >= 0 && angle <= 45) return "left";
       else if (angle > 45 && vec1[1] > 0) return "top";
       else if (angle >= 135) return "right";
@@ -173,7 +173,7 @@ function GameBoard() {
       setAnchors((anchor) =>
         anchor.map((root) => {
           root.root = true;
-          root.coordinates = [midX - 30, midY - 60];
+          root.coordinates = [midX, midY];
           root.scale = 0.95;
           root.orientation =
             root.tile[0] === root.tile[1] ? "vertical" : "horizontal";
@@ -200,20 +200,26 @@ function GameBoard() {
     <div
       id="play-board"
       ref={playBoardRef}
-      className="absolute top-10 h-3/4 w-full "
+      className="absolute top-10 h-3/4 w-full bg-green"
     >
       {anchors.map(({ coordinates, tile, orientation, scale, id }, index) => (
-        <Anchor
-          key={index}
-          {...{
-            coordinates,
-            tile: { id, tile },
-            tilt: orientation === "vertical" ? 0 : 90,
-            scale,
-            initailSetAnchor,
-            activeHover,
-          }}
-        />
+        <>
+          <Anchor
+            key={index}
+            {...{
+              coordinates,
+              tile: { id, tile },
+              tilt: orientation === "vertical" ? 0 : 90,
+              scale,
+              initailSetAnchor,
+              activeHover,
+            }}
+          />
+          <div
+            className="w-1 h-1 rounded-full absolute z-40 bg-red-500 "
+            style={{ top: coordinates[1], left: coordinates[0] }}
+          />
+        </>
       ))}
       {defaultDrop && (
         <DropZone

@@ -40,7 +40,7 @@ function DropZone({
     <div
       {...bind()}
       className={`-translate-x-1/2 -translate-y-1/2 ${
-        canDrop ? "bg-main-orange/65" : "bg-transparent"
+        canDrop ? "bg-transparent" : "bg-transparent"
       }  `}
       style={{
         width: `${400 * scale}px`,
@@ -49,7 +49,7 @@ function DropZone({
         top: position ? `${position[1]}px` : "0",
         left: position ? `${position[0]}px` : "0",
         transition: "background-color 100ms ease-in-out 10ms",
-        zIndex: activeHover.current === id ? 1 : 0,
+        zIndex: activeHover.current === id ? 15 : 0,
       }}
     />
   );

@@ -50,9 +50,18 @@ function DeckTile({
       });
   });
   return (
+<<<<<<< HEAD
     <animated.div {...bind()} style={springProp} className={`touch-none z-10 relative`}>
       <DominoesTile {...{ tile }} />
     </animated.div>
+=======
+    <div
+      ref={drag}
+      className={`transition-all pl-2 ${isDragging && "opacity-0"}`}
+    >
+      <DominoesTile tile={tile} />
+    </div>
+>>>>>>> aa35167af024ad22624523c8f5e65c64d2685cef
   );
 }
 

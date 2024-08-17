@@ -1,6 +1,13 @@
 import axios, { AxiosResponse } from 'axios';
 import { Server, Socket } from 'socket.io';
-import { generateRandomCharacters } from '../utils';
+import {
+  findLargestDouble,
+  generateBoneyard,
+  generateRandomCharacters,
+} from '../utils';
+import { encrypt } from '../utils/encrypt';
+import GameModel from '../models/Game.model';
+import { numberPair } from '../types';
 
 const SocketController = {
   createGame: async (socket: Socket, io: Server, token?: string) => {
@@ -26,6 +33,60 @@ const SocketController = {
       io.emit('newGameCreated', { game: res.data.data });
       return true;
     } catch (err: any) {
+      throw new Error(err.message);
+    }
+  },
+
+  startGame: async (io: Server, gameId: string, playerId: number) => {
+    try {
+      console.log('called');
+      const boneyard = generateBoneyard();
+      const encryptedBoneyard = encrypt(JSON.stringify(boneyard));
+      const player1Choices: number[] = [];
+      const player2Choices: number[] = [];
+      while (player1Choices.length < 7 || player2Choices.length < 7) {
+        const random = Math.floor(Math.random() * 28);
+        if (
+          player1Choices.length < 7 &&
+          !player2Choices.includes(random) &&
+          !player1Choices.includes(random)
+        ) {
+          player1Choices.push(random);
+        } else if (
+          player2Choices.length < 7 &&
+          !player1Choices.includes(random) &&
+          !player2Choices.includes(random)
+        ) {
+          player2Choices.push(random);
+        }
+      }
+      const max1 = findLargestDouble(player1Choices.map((i) => boneyard[i]));
+      const max2 = findLargestDouble(player2Choices.map((i) => boneyard[i]));
+      let turn =
+        max1 < 0 && max2 < 0 ? -1 : max1 > max2 ? 0 : max2 > max1 ? 1 : -1;
+      console.log(player1Choices, player2Choices, turn, max1, max2);
+
+      setTimeout(() => {
+        io.to(gameId).emit('boneyard', {
+          encryptedBoneyard: boneyard,
+          choices:
+            playerId === 0
+              ? player1Choices
+              : playerId === 1
+              ? player2Choices
+              : null,
+          turn,
+        });
+      }, 2000);
+      const game = await GameModel.findOne({ gameId });
+      if (game) {
+        game.gameData = {boneyard};
+        game.turn = turn === 0 ? 0 : 1;
+        await game.save();
+      }
+      return true;
+    } catch (err: any) {
+      console.log(err);
       throw new Error(err.message);
     }
   },

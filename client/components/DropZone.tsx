@@ -1,58 +1,55 @@
-import React from "react";
-import { useDrop, DropTargetMonitor } from "react-dnd";
+import React, { useEffect, useState } from "react";
+import { useHover } from "@use-gesture/react";
 import { DropZoneProp } from "@/types";
+import { useGameContext } from "./GameProvider";
 
 function DropZone({
   acceptedDotCount,
   position,
   initailSetAnchor,
   activeHover,
-  index,
+  id,
+  scale,
 }: DropZoneProp) {
-  const dropSpec = {
-    accept: "DOMINOTILE",
-    collect: (monitor: DropTargetMonitor<any, void>) => ({
-      canDrop: monitor.canDrop() && monitor.isOver(),
-    }),
-    hover: () => {
-      console.log("hovering dropzone at index ", index);
-      if (activeHover.current === -1) activeHover.current = index;
-    },
-    drop: (item: any, monitor: DropTargetMonitor<any, void>) => {
-      const coordinates = monitor.getClientOffset();
-      coordinates &&
-        initailSetAnchor(item.tile, [coordinates.x, coordinates.y]);
-    },
-    canDrop: (item: any) =>
-      acceptedDotCount.some((dot: number) => item.tile.includes(dot)),
-  };
+  const [canDrop, setCanDrop] = useState(false);
+  const { draggedTile, setRecentlyDroppedTile } = useGameContext();
 
-  const [{ canDrop }, drop] = useDrop(dropSpec);
+  useEffect(() => {
+    if (
+      draggedTile &&
+      acceptedDotCount.some((i) => draggedTile.tile.includes(i))
+    )
+      setCanDrop(true);
+  }, [acceptedDotCount, draggedTile]);
 
-  const handleDragLeave = () => {
-    activeHover.current = -1;
-  };
+  const bind = useHover(({ xy: [x, y], hovering }) => {
+    if (hovering) {
+      activeHover.current = activeHover.current || id;
 
-  let coordinates = position;
-  let measurementUnit = "px";
-  if (position.some((item) => item > 0 && item < 1)) {
-    coordinates = [position[0] * 100, position[1] * 100];
-    measurementUnit = "%";
-  }
+      if (draggedTile && activeHover.current === id && canDrop) {
+        setRecentlyDroppedTile(draggedTile);
+        initailSetAnchor(draggedTile, [x, y], id);
+        activeHover.current = null;
+      }
+    } else
+      activeHover.current =
+        activeHover.current === id ? null : activeHover.current;
+  });
 
   return (
     <div
-      ref={drop}
-      onDragLeave={handleDragLeave}
-      className={`h-56 w-56 rounded-2xl -translate-x-1/2 -translate-y-1/2 ${
-        canDrop ? "bg-main-orange/65" : "bg-transparent"
+      {...bind()}
+      className={`-translate-x-1/2 -translate-y-1/2 ${
+        canDrop ? "bg-transparent" : "bg-transparent"
       }  `}
       style={{
+        width: `${400 * scale}px`,
+        height: `${400 * scale}px`,
         position: "absolute",
-        top: `${coordinates[1]}${measurementUnit}`,
-        left: `${coordinates[0]}${measurementUnit}`,
+        top: position ? `${position[1]}px` : "0",
+        left: position ? `${position[0]}px` : "0",
         transition: "background-color 100ms ease-in-out 10ms",
-        zIndex: activeHover.current === index ? 1 : 0,
+        zIndex: activeHover.current === id ? 15 : 0,
       }}
     />
   );

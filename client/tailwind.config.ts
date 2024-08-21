@@ -35,6 +35,9 @@ const config: Config = {
         poppins: ["var(--font-poppins)"],
         open_sans: ["var(--font-open-sans)"],
       },
+      gridTemplateColumns: {
+        "14": "repeat(14, minmax(auto, max-content))",
+      },
     },
 
     screens: {

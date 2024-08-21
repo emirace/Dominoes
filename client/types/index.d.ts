@@ -1,3 +1,5 @@
+import { RectReadOnly } from "react-use-measure";
+
 export interface User {
   _id: number;
   username: string;
@@ -13,31 +15,44 @@ export interface Game {
 
 export interface AnchorProp {
   coordinates: numberPair;
-  tile: numberPair;
+  tile: tileType;
   tilt: number;
   scale: number;
-}
-
-export interface DominoesTileProps {
-  tile: numberPair;
+  initailSetAnchor: (
+    tile: tileType,
+    coordinates: numberPair,
+    id: number
+  ) => void;
+  activeHover: React.MutableRefObject<number | null>;
 }
 
 export type numberPair = [number, number];
+export type tileType = { id: number; tile: numberPair };
 
+export interface DominoesTileProps {
+  tile: tileType;
+  size?: string;
+}
 export interface DropZoneProp {
   acceptedDotCount: number[];
-  position: numberPair;
-  initailSetAnchor: (tile: numberPair, coordinates: numberPair) => void;
-  activeHover: React.MutableRefObject<number>;
-  index: number;
+  position: numberPair | null;
+  initailSetAnchor: (
+    tile: tileType,
+    coordinates: numberPair,
+    id: number
+  ) => void;
+  activeHover: React.MutableRefObject<number | null>;
+  id: number;
+  scale: number;
 }
 
 export interface tileAlignSpecType {
+  id: number;
   root: boolean;
   orientation: string;
+  scale: number;
   tile: numberPair;
   isDouble: boolean;
-  coordinates: numberPair;
   coordinates: numberPair;
   connectedAt: [[number], [number]];
   connections: tileAlignSpec[];
@@ -50,7 +65,51 @@ export interface tileAlignSpecType {
     maxLayoutHeight: number,
     maxLayoutWidth: number
   ) => void;
+  attach: any;
+  calcDropLocation: (vec: numberPair) => string | undefined;
 }
+
+export interface boneYardDistSpecType {
+  active: boolean;
+  distribute: boolean;
+  instant: boolean;
+  drawAmount: number;
+  required: number[] | null;
+  callbacks: ((position: numberPair) => tileType|undefined)[];
+}
+
+export interface GameContextType {
+  draggedTile: tileType | null;
+  setDraggedTile: React.Dispatch<React.SetStateAction<TileType>>;
+  recentlyDroppedTile: tileType | null;
+  setRecentlyDroppedTile: React.Dispatch<React.SetStateAction<tileType | null>>;
+
+  selectFromBoneYard: () => tileType;
+
+  permits: number[];
+  setPermits: React.Dispatch<React.SetStateAction<number[]>>;
+
+  boneYardDistSpec: boneYardDistSpecType;
+  setBoneYardDistSpec: React.Dispatch<
+    React.SetStateAction<boneYardDistSpecType>
+  >;
+  registerDistCallback: (callback: (position: numberPair) => tileType|undefined) => number;
+  unRegisterDistCallback: (index: number) => void;
+  requestTile: (
+    instant: boolean,
+    callbackID: number,
+    required?: number[],
+    amount?: number,
+  ) => void;
+}
+
+export type useDistributorType = [
+  tileType[],
+  React.Dispatch<SetStateAction<tileType[]>>,
+  numberPair | undefined,
+  MutableRefObject<HTMLDivElement | null>,
+  (amount?: number) => void
+];
 
 declare global {
   interface Window {

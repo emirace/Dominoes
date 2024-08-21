@@ -9,82 +9,58 @@ import {
   useSpringRef,
 } from "@react-spring/web";
 import { useGameContext } from "./GameProvider";
-import useMeasure from "react-use-measure";
-import { numberPair } from "@/types";
+import useDistributor, { requestType } from "@/hooks/useDistributor";
 
 function PlayerDeck() {
-  const { playerDeck, setPlayerDeck, requestTile, permits } = useGameContext();
-  const [addTile, setAddTile] = useState<number[]>([]);
-
-  const [playerDeckBoundRef, playerDeckBound] = useMeasure();
-
-  // console.log("addTile", addTile);
+  const { permits } = useGameContext();
+  const [hand, setHand, from, boundRef, requestTile] = useDistributor(
+    requestType.MAIN_DECK
+  );
 
   const springRef = useSpringRef();
   const springProp = useSpring({
     ref: springRef,
-    width: playerDeck.length * 64 - 4,
-    config: config.gentle,
+    width: hand.length * 64 - 4,
+    config: config.stiff,
   });
 
   const transRef = useSpringRef();
-  const transitions = useTransition(playerDeck, {
+  const transitions = useTransition(hand, {
     ref: transRef,
     from: {
-      transform: `translate(${-addTile[0]}px, ${-addTile[1]}px) scale{0.5}`,
-      // width: "0%",
-      opacity: 0,
+      transform: from
+        ? `translate(${-from[0]}px, ${-from[1]}px) scale(0.5)`
+        : "",
     },
     enter: {
       width: "100%",
-      opacity: 1,
-      transform: `translate(0, 0) scale{1}`,
+      transform: `translate(0px, 0px) scale(1)`,
     },
-    leave: { width: "100%" },
-    config: config.gentle,
+    leave: { width: "0%" },
+    config: config.stiff,
   });
 
-  useChain([springRef, transRef], [0, 0])
+  useChain([springRef, transRef], [0, 0]);
 
   const onDropComplete = ({ id }: { id: number }) => {
-    return setPlayerDeck((prevPlayerDeck) =>
-      prevPlayerDeck.filter((tile) => tile.id !== id)
-    );
+    return setHand((prevArr) => prevArr.filter((tile) => tile.id !== id));
   };
 
   useEffect(() => {
     const needTile =
-      playerDeck.length &&
-      !playerDeck.some(({ tile }) =>
-        permits.some((item) => tile.includes(item))
-      );
-
+    hand.length &&
+    !hand.some(({ tile }) => permits.some((item) => tile.includes(item)));
+    
     if (needTile) {
-      const requestTileCallBack = (position: numberPair) => {
-        console.log("position", position);
-        const from = [
-          playerDeckBound.right - position[0],
-          playerDeckBound.top - position[1],
-        ];
-
-        setAddTile(from);
-      };
-
-      requestTile(requestTileCallBack);
+      requestTile();
     }
-  }, [
-    playerDeck,
-    permits,
-    requestTile,
-    playerDeckBound.right,
-    playerDeckBound.top,
-  ]);
+  }, [permits]);
 
   return (
     <animated.div
-      ref={playerDeckBoundRef}
+      ref={boundRef}
       style={springProp}
-      className="absolute flex left-[50%] translate-x-[-50%] items-center self-end gap-1 "
+      className="absolute flex left-[50%] translate-x-[-50%] items-center self-end gap-1 h-[120px]"
     >
       {transitions((style, tile) => (
         <animated.div key={tile.id} style={style}>

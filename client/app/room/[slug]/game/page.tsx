@@ -2,33 +2,19 @@
 
 import Image from "next/image";
 import Link from "next/link";
-<<<<<<< HEAD
 import { ArrowLeft } from "react-feather";
 import PlayerDeck from "@/components/PlayerDeck";
 import GameBoard from "@/components/GameBoard";
 import { GameProvider } from "@/components/GameProvider";
 import OpponentDeck from "@/components/OpponentDeck";
 import BoneYard from "@/components/BoneYard";
-
-
-function GamePage() {
-  
-=======
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { ArrowLeft } from "react-feather";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import Deck from "../../../../components/Deck";
-import TopZLayer from "../../../../components/TopZLayer";
-import GameBoard from "../../../../components/GameBoard";
 import { useSocket } from "@/components/SocketProvider";
-import { decrypt } from "@/utils/decrypt";
 import useCreateAPI from "@/utils/api";
 import { toast } from "react-toastify";
 import { Game, numberPair } from "@/types";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { useRouter } from "next/navigation";
-import { shuffleArray } from "@/utils";
 
 function GamePage({ params }: { params: { slug: string } }) {
   const router = useRouter();
@@ -45,7 +31,7 @@ function GamePage({ params }: { params: { slug: string } }) {
   const [isTurn, setIsTurn] = useState(false);
   const [boneyard, setBoneyard] = useState<numberPair[]>([]);
   const [deck, setDeck] = useState<numberPair[]>([]);
-  console.log(boneyard, deck, isTurn);
+  // console.log(boneyard, deck, isTurn);
 
   useEffect(() => {
     if (socket) {
@@ -81,7 +67,6 @@ function GamePage({ params }: { params: { slug: string } }) {
     }
   }, [socket]);
 
->>>>>>> aa35167af024ad22624523c8f5e65c64d2685cef
   return (
     <GameProvider>
       <div

@@ -6,7 +6,12 @@ import React, {
   useEffect,
   useRef,
 } from "react";
-import { GameContextType, numberPair, tileType } from "@/types";
+import {
+  GameContextType,
+  numberPair,
+  tileType,
+  boneYardDistSpecType,
+} from "@/types";
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -15,14 +20,20 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     useState<GameContextType["draggedTile"]>(null);
   const [recentlyDroppedTile, setRecentlyDroppedTile] =
     useState<GameContextType["draggedTile"]>(null);
-
-  const [playerDeck, setPlayerDeck] = useState<tileType[]>([]);
   const [permits, setPermits] = useState<number[]>([9]);
-  const [boneYardTile, setBoneYardTile] = useState<tileType[]>([]);
-  const [activateBoneYard, setActivateBoneYard] = useState<boolean>(false);
-  const drawFromBoneYardClb = useRef<((position: numberPair) => void) | null>(
-    null
-  );
+  const [distCallback, setDistCallback] = useState<
+    ((position: numberPair) => tileType | undefined)[]
+  >([]);
+  const boneYardTile = useRef<tileType[]>([]);
+  const [boneYardDistSpec, setBoneYardDistSpec] =
+    useState<boneYardDistSpecType>({
+      active: false,
+      distribute: false,
+      instant: false,
+      drawAmount: 0,
+      required: [],
+      callbacks: [],
+    });
 
   const makeTile = (tiles: numberPair[]): tileType[] =>
     tiles.map((tile) => ({
@@ -31,41 +42,67 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }));
 
   const selectFromBoneYard = () => {
-    console.log('prevList', boneYardTile);
-    const index = Math.floor(Math.random() * boneYardTile.length);
-    let result;
-    setBoneYardTile((prevList) => {
-     result = prevList.splice(index, 1);
-      return [...prevList];
-    });
-    return result
+    const index = Math.floor(Math.random() * boneYardTile.current.length);
+    return boneYardTile.current.splice(index, 1)[0];
   };
 
-  const requestTile = (callback: (position: numberPair) => void) => {
-    setActivateBoneYard(true);
-    drawFromBoneYardClb.current = callback;
+  const requestTile = (
+    instant: boolean,
+    callbackID: number,
+    required?: number[],
+    amount?: number
+  ) => {
+    setBoneYardDistSpec((prevObj) => ({
+      active: true,
+      distribute: false,
+      instant: instant,
+      drawAmount: instant && amount ? amount : 0,
+      required: required || null,
+      callbacks: [distCallback[callbackID]],
+    }));
+  };
+
+  const registerDistCallback = (
+    callback: (position: numberPair) => tileType | undefined
+  ) => {
+    setDistCallback((prevArr) => [...prevArr, callback]);
+    return distCallback.length;
+  };
+
+  const unRegisterDistCallback = (index: number) => {
+    setDistCallback((prevArr) => {
+      const newList = [...prevArr];
+      newList.splice(index, 1);
+      return newList;
+    });
   };
 
   useEffect(() => {
-    setPlayerDeck([
-      ...makeTile([
-        [1, 1],
-        [2, 1],
-        [3, 1],
-        [4, 1],
-        [5, 1],
-      ]),
-    ]);
-
-    setBoneYardTile([
+    boneYardTile.current = [
       ...makeTile([
         [1, 0],
         [2, 2],
         [3, 3],
         [4, 4],
         [5, 5],
+        [6, 6],
       ]),
-    ]);
+    ];
+
+    setTimeout(() => {
+      setDistCallback((arr) => {
+        const requestSpec = {
+          active: true,
+          distribute: true,
+          instant: true,
+          drawAmount: 6,
+          callbacks: arr,
+        };
+        setBoneYardDistSpec((prevObj) => ({ ...prevObj, ...requestSpec }));
+
+        return arr;
+      });
+    }, 0);
   }, []);
 
   return (
@@ -75,15 +112,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setDraggedTile,
         recentlyDroppedTile,
         setRecentlyDroppedTile,
-        playerDeck,
-        setPlayerDeck,
         selectFromBoneYard,
-        activateBoneYard,
-        setActivateBoneYard,
-        drawFromBoneYardClb,
-        requestTile,
+        boneYardDistSpec,
+        setBoneYardDistSpec,
         permits,
         setPermits,
+        registerDistCallback,
+        unRegisterDistCallback,
+        requestTile,
       }}
     >
       {children}

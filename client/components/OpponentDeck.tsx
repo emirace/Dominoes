@@ -1,9 +1,44 @@
 import React from "react";
 import Image from "next/image";
 import { useGameContext } from "./GameProvider";
+import useDistributor from "@/hooks/useDistributor";
+import {
+  animated,
+  config,
+  useChain,
+  useSpring,
+  useSpringRef,
+  useTransition,
+} from "@react-spring/web";
+import DominoesTile from "./DominoesTile";
 
 function OpponentDeck() {
-  const { opponentDeckRef } = useGameContext();
+  const {} = useGameContext();
+  const [hand, _, from, boundRef] = useDistributor();
+
+  const springRef = useSpringRef();
+  const springProp = useSpring({
+    ref: springRef,
+    width: hand.length * 64 - 4,
+    config: config.stiff,
+  });
+
+  const transRef = useSpringRef();
+  const transitions = useTransition(hand, {
+    ref: transRef,
+    from: {
+      transform: from ? `translate(${-from[0]}px, ${-from[1]}px)` : "",
+    },
+    enter: {
+      width: "100%",
+      transform: `translate(0px, 0px)`,
+    },
+    leave: { width: "0%" },
+    config: config.stiff,
+  });
+
+  useChain([springRef, transRef], [0, 0]);
+
   return (
     <div
       id="other-player"
@@ -19,31 +54,23 @@ function OpponentDeck() {
         />
       </div>
       <div
-        ref={opponentDeckRef}
-        className="relative flex-1 justify-cente self-start items-center w-ful h-10"
+        ref={boundRef}
+        className="relative flex-1 flex justify-cente self-start items-center w-full h-[60px]"
       >
-        {/* <div
-          className="tile absolute top-0 left-2"
-          style={{
-            transform: "translate(0, 0px) rotate(0deg)",
-            backgroundPosition: "-40px -280px",
-            width: "30px",
-            height: "60px",
-            backgroundSize: "280px",
-            zIndex: 100,
-          }}
-        ></div>
-        <div
-          className="tile absolute top-0 left-2"
-          style={{
-            transform: "translate(20px, 0px) rotate(0deg)",
-            backgroundPosition: "-40px -280px",
-            width: "30px",
-            height: "60px",
-            zIndex: 99,
-            backgroundSize: "280px",
-          }}
-        ></div> */}
+        {transitions((style) => (
+          <div className="relative h-full w-6 overflow-x-visible">
+            <animated.div style={style} className='h-full drop-shadow-2xl'>
+              {" "}
+              <DominoesTile
+                tile={{
+                  id: 0,
+                  tile: [0, 0],
+                }}
+                size="small"
+              />
+            </animated.div>
+          </div>
+        ))}
       </div>
       <div className="text-center ml-auto">
         <p>0</p>

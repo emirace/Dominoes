@@ -137,22 +137,13 @@ function tileAlignSpec(
 }
 
 function GameBoard() {
-<<<<<<< HEAD
   const [anchors, setAnchors] = useState<tileAlignSpecType[]>([]);
   const [defaultDrop, setDefaultDrop] = useState<boolean>(false);
   const [playBoardRef, bounds] = useMeasure();
   const activeHover = useRef<number | null>(null);
   const droppedTile = useRef<number | null>(null);
   const droppedOn = useRef<number | null>(null);
-=======
-  const [dropZones, setDropZones] = useState<
-    Omit<DropZoneProp, "initailSetAnchor" | "activeHover" | "index">[]
-  >([
-    { acceptedDotCount: [1, 2, 3, 4, 5, 6], position: [0.5, 0.5] },
-    { acceptedDotCount: [1, 2, 3, 4, 5, 6], position: [0.45, 0.45] },
-  ]);
->>>>>>> aa35167af024ad22624523c8f5e65c64d2685cef
-
+  
   const initailSetAnchor = (
     tile: tileType,
     coordinates: numberPair,
@@ -173,7 +164,6 @@ function GameBoard() {
   };
 
   useEffect(() => {
-<<<<<<< HEAD
     if (anchors.length === 0) setDefaultDrop(true);
     else if (anchors.length === 1) {
       const [midX, midY] = [
@@ -200,96 +190,55 @@ function GameBoard() {
               anchors.find((anchor) => anchor.id === droppedTile.current)
                 ?.coordinates as numberPair
             )
-=======
-    const finalSetAnchor = () => {
-      const boardBoundingPosition = playBoard.current?.getBoundingClientRect();
-      if (anchors.length && boardBoundingPosition) {
-        const midX =
-          (boardBoundingPosition.right - boardBoundingPosition.left) / 2;
-        const midY =
-          (boardBoundingPosition.bottom - boardBoundingPosition.top) / 2;
-        setAnchors((prevState) =>
-          prevState.map((anchor, index) =>
-            index !== anchors.length - 1
-              ? anchor
-              : prevState.length === 1
-              ? {
-                  ...anchor,
-                  coordinates: [midX - 30, midY - 60],
-                  tilt: 90,
-                  scale: 0.9,
-                }
-              : prevState.length === 2
-              ? {
-                  ...anchor,
-                  coordinates: [midX - 114, midY - 60],
-                  tilt: 0,
-                  scale: 0.9,
-                }
-              : {
-                  ...anchor,
-                  coordinates: [midX + 54, midY - 60],
-                  tilt: 0,
-                  scale: 0.9,
-                }
-          )
->>>>>>> aa35167af024ad22624523c8f5e65c64d2685cef
         );
       }
     }
   }, [anchors.length, bounds]);
-  // console.log(anchors.length, defaultDrop);
+  // console.log('anchors.length, defaultDrop');
 
+  
   return (
-    <div
-      id="play-board"
-      ref={playBoardRef}
-      className="absolute top-10 h-3/4 w-full bg-green"
-    >
-      {anchors.map(({ coordinates, tile, orientation, scale, id }, index) => (
-        <>
-          <Anchor
-            key={index}
+    <div>
+      <div
+        id="play-board"
+        ref={playBoardRef}
+        className="absolute top-10 h-3/4 w-full bg-green"
+      >
+        {anchors.map(({ coordinates, tile, orientation, scale, id }, index) => (
+          <>
+            <Anchor
+              key={index}
+              {...{
+                coordinates,
+                tile: { id, tile },
+                tilt: orientation === "vertical" ? 0 : 90,
+                scale,
+                initailSetAnchor,
+                activeHover,
+              }}
+            />
+            <div
+              className="w-1 h-1 rounded-full absolute z-40 bg-red-500 "
+              style={{ top: coordinates[1], left: coordinates[0] }}
+            />
+          </>
+        ))}
+        {defaultDrop && (
+          <DropZone
             {...{
-              coordinates,
-              tile: { id, tile },
-              tilt: orientation === "vertical" ? 0 : 90,
-              scale,
+              position: [
+                (bounds.right - bounds.left) / 2,
+                (bounds.bottom - bounds.top) / 2,
+              ],
+              acceptedDotCount: [1, 2, 3, 4, 5, 6],
               initailSetAnchor,
               activeHover,
+              id: -1,
+              scale: 1,
             }}
           />
-          <div
-            className="w-1 h-1 rounded-full absolute z-40 bg-red-500 "
-            style={{ top: coordinates[1], left: coordinates[0] }}
-          />
-        </>
-      ))}
-      {defaultDrop && (
-        <DropZone
-<<<<<<< HEAD
-          {...{
-            position: [
-              (bounds.right - bounds.left) / 2,
-              (bounds.bottom - bounds.top) / 2,
-            ],
-            acceptedDotCount: [1, 2, 3, 4, 5, 6],
-            initailSetAnchor,
-            activeHover,
-            id: -1,
-            scale: 1,
-=======
-          key={index}
-          {...{
-            position,
-            acceptedDotCount,
-            initailSetAnchor,
-            activeHover,
-            index,
->>>>>>> aa35167af024ad22624523c8f5e65c64d2685cef
-          }}
-        />
-      )}
+        )}
+      </div>
     </div>
   );
 }

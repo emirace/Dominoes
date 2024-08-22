@@ -99,36 +99,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    // boneYardTile.current = [
-    //   ...makeTile([
-    //     [1, 1],
-    //     [2, 2],
-    //     [3, 3],
-    //     [4, 4],
-    //     [5, 5],
-    //     [6, 4],
-    //   ]),
-    // ];oom/ZHx6oH/game
-    console.log(boneYardTile.current);
-    if (boneYardTile.current.length < 1) return;
-
-    setTimeout(() => {
-      setDistCallback((arr) => {
-        const requestSpec = {
-          active: true,
-          distribute: true,
-          instant: true,
-          drawAmount: 6,
-          callbacks: arr,
-        };
-        setBoneYardDistSpec((prevObj) => ({ ...prevObj, ...requestSpec }));
-
-        return arr;
-      });
-    }, 0);
-  }, [boneYardTile.current]);
-
-  useEffect(() => {
     if (socket) {
       API.get(`/game/${slug}`)
         .then(({ data }) => {
@@ -163,6 +133,27 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       };
     }
   }, [socket]);
+
+  useEffect(() => {
+    console.log(boneYardTile.current);
+    if (!boneYardTile.current.length && distCallback.length !== 2) return;
+
+    // setTimeout(() => {
+      setDistCallback((arr) => {
+        const requestSpec = {
+          active: true,
+          distribute: true,
+          instant: true,
+          drawAmount: 6,
+          callbacks: arr,
+        };
+        setBoneYardDistSpec((prevObj) => ({ ...prevObj, ...requestSpec }));
+
+        return arr;
+      });
+    // }, 0);
+  }, [boneYardTile.current, distCallback]);
+
 
   return (
     <GameContext.Provider

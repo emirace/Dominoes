@@ -20,7 +20,7 @@ function PlayerDeck() {
   const springRef = useSpringRef();
   const springProp = useSpring({
     ref: springRef,
-    width: hand.length * 64 - 4,
+    width: hand.lboneYardDistSpecength * 64 - 4,
     config: config.stiff,
   });
 
@@ -48,9 +48,9 @@ function PlayerDeck() {
 
   useEffect(() => {
     const needTile =
-    hand.length &&
-    !hand.some(({ tile }) => permits.some((item) => tile.includes(item)));
-    
+      hand.length &&
+      !hand.some(({ tile }) => permits.some((item) => tile.includes(item)));
+
     if (needTile) {
       requestTile();
     }

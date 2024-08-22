@@ -1,3 +1,4 @@
+import { numberPair } from "./index.d";
 import { RectReadOnly } from "react-use-measure";
 
 export interface User {
@@ -75,7 +76,7 @@ export interface boneYardDistSpecType {
   instant: boolean;
   drawAmount: number;
   required: number[] | null;
-  callbacks: ((position: numberPair) => tileType|undefined)[];
+  callbacks: ((position: numberPair) => tileType | undefined)[];
 }
 
 export interface GameContextType {
@@ -83,8 +84,10 @@ export interface GameContextType {
   setDraggedTile: React.Dispatch<React.SetStateAction<TileType>>;
   recentlyDroppedTile: tileType | null;
   setRecentlyDroppedTile: React.Dispatch<React.SetStateAction<tileType | null>>;
+  deck: numberPair[];
 
   selectFromBoneYard: () => tileType;
+  setDeck: (deck: numberPair[]) => void;
 
   permits: number[];
   setPermits: React.Dispatch<React.SetStateAction<number[]>>;
@@ -93,13 +96,15 @@ export interface GameContextType {
   setBoneYardDistSpec: React.Dispatch<
     React.SetStateAction<boneYardDistSpecType>
   >;
-  registerDistCallback: (callback: (position: numberPair) => tileType|undefined) => number;
+  registerDistCallback: (
+    callback: (position: numberPair) => tileType | undefined
+  ) => number;
   unRegisterDistCallback: (index: number) => void;
   requestTile: (
     instant: boolean,
     callbackID: number,
     required?: number[],
-    amount?: number,
+    amount?: number
   ) => void;
 }
 

@@ -5,7 +5,8 @@ import { useGameContext } from "./GameProvider";
 import { numberPair } from "@/types";
 
 function BoneYard() {
-  const { boneYardDistSpec, setBoneYardDistSpec, setPermits } = useGameContext();
+  const { boneYardDistSpec, deck, setBoneYardDistSpec, setDeck, setPermits } =
+    useGameContext();
   const gridRef = useRef<HTMLDivElement | null>(null);
   const complete = useRef(0);
 
@@ -21,7 +22,7 @@ function BoneYard() {
   );
 
   useEffect(() => {
-    if (boneYardDistSpec.distribute) {
+    if (boneYardDistSpec.distribute && deck) {
       for (let i = 0; i < boneYardDistSpec.callbacks.length; i++) {
         const callback = boneYardDistSpec.callbacks[i];
 
@@ -45,7 +46,7 @@ function BoneYard() {
                   required: [],
                   callbacks: [],
                 });
-                setPermits([19, 10])
+                setPermits([19, 10]);
               }
             }
           };
@@ -53,7 +54,7 @@ function BoneYard() {
         }, 1000 + i * (1000 / boneYardDistSpec.callbacks.length));
       }
     }
-  }, [boneYardDistSpec]);
+  }, [boneYardDistSpec, deck]);
 
   const handleSelectTile = (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,

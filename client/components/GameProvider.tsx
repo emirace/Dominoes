@@ -5,13 +5,20 @@ import React, {
   ReactNode,
   useEffect,
   useRef,
+  useMemo,
 } from "react";
 import {
   GameContextType,
   numberPair,
   tileType,
   boneYardDistSpecType,
+  Game,
 } from "@/types";
+import { useSocket } from "./SocketProvider";
+import { useParams, useRouter } from "next/navigation";
+import useCreateAPI from "@/utils/api";
+import useCurrentUser from "@/hooks/useCurrentUser";
+import { toast } from "react-toastify";
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -20,6 +27,16 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     useState<GameContextType["draggedTile"]>(null);
   const [recentlyDroppedTile, setRecentlyDroppedTile] =
     useState<GameContextType["draggedTile"]>(null);
+  const [game, setGame] = useState<Game | null>(null);
+  const { slug } = useParams();
+  const router = useRouter();
+  const { socket } = useSocket();
+  const API = useCreateAPI();
+  const { user } = useCurrentUser();
+  const playerId = useMemo(
+    () => game?.players.findIndex((player) => player._id === user?._id) ?? -1,
+    [game?.players]
+  );
   const [permits, setPermits] = useState<number[]>([9]);
   const [distCallback, setDistCallback] = useState<
     ((position: numberPair) => tileType | undefined)[]
@@ -34,6 +51,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       required: [],
       callbacks: [],
     });
+
+  const [isTurn, setIsTurn] = useState(false);
+  const [boneyard, setBoneyard] = useState<numberPair[]>([]);
+  const [deck, setDeck] = useState<numberPair[]>([]);
 
   const makeTile = (tiles: numberPair[]): tileType[] =>
     tiles.map((tile) => ({
@@ -78,16 +99,18 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    boneYardTile.current = [
-      ...makeTile([
-        [1, 0],
-        [2, 2],
-        [3, 3],
-        [4, 4],
-        [5, 5],
-        [6, 6],
-      ]),
-    ];
+    // boneYardTile.current = [
+    //   ...makeTile([
+    //     [1, 1],
+    //     [2, 2],
+    //     [3, 3],
+    //     [4, 4],
+    //     [5, 5],
+    //     [6, 4],
+    //   ]),
+    // ];oom/ZHx6oH/game
+    console.log(boneYardTile.current);
+    if (boneYardTile.current.length < 1) return;
 
     setTimeout(() => {
       setDistCallback((arr) => {
@@ -103,7 +126,43 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         return arr;
       });
     }, 0);
-  }, []);
+  }, [boneYardTile.current]);
+
+  useEffect(() => {
+    if (socket) {
+      API.get(`/game/${slug}`)
+        .then(({ data }) => {
+          // console.log(data);
+          if (!data.data || data.data.players.length === 0) {
+            return toast.error("Game not found");
+          }
+          console.log("dataaa", data.data);
+          setGame(data.data);
+        })
+        .catch((err) => {
+          console.log(err);
+          toast.error("Game not found");
+          setTimeout(() => router.push("/"), 2000);
+        });
+
+      socket.on("boneyard", ({ encryptedBoneyard, choices, turn }) => {
+        console.log("gameJoined", encryptedBoneyard);
+        // const decryptedBoneyard = decrypt(encryptedBoneyard);
+        console.log({ encryptedBoneyard, turn, choices });
+        encryptedBoneyard && setBoneyard(encryptedBoneyard);
+        const userDeck = choices.map((i: number) => encryptedBoneyard[i]);
+        boneYardTile.current = makeTile(userDeck);
+        setDeck(userDeck);
+        setIsTurn(turn === playerId);
+      });
+
+      return () => {
+        socket.off("boneyard");
+        socket.off("playerReady");
+        socket.off("joinGameError");
+      };
+    }
+  }, [socket]);
 
   return (
     <GameContext.Provider
@@ -113,8 +172,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         recentlyDroppedTile,
         setRecentlyDroppedTile,
         selectFromBoneYard,
+        deck,
         boneYardDistSpec,
         setBoneYardDistSpec,
+        setDeck,
         permits,
         setPermits,
         registerDistCallback,

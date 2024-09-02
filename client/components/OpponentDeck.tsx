@@ -42,7 +42,7 @@ function OpponentDeck() {
   return (
     <div
       id="other-player"
-      className="absolute gap-2 top-0 bg-main-gray w-[260px] rounded-b-9 flex p-2 items-center"
+      className="absolute gap-2 top-0 bg-main-gray w-[260px] rounded-b-9 flex p-2 items-center z-50"
     >
       <div className="w-[60px] h-[60px]">
         <Image

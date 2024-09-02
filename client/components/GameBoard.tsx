@@ -3,7 +3,8 @@ import DropZone from "./DropZone";
 import Anchor from "./Anchor";
 import useMeasure from "react-use-measure";
 import { numberPair, tileAlignSpecType, tileType } from "@/types";
-import { calcVectorAngle } from "@/utils/game-utils";
+import { calcVectorAngle, calcDotProduct } from "@/utils/game-utils";
+import { availableMemory } from "process";
 
 const TILEGAP = 4; // gap between layed out tiles in px. this is also affected by scale
 
@@ -11,139 +12,290 @@ function getLayoutHeight(scale: number, peakYCoordinates: numberPair): number {
   return (peakYCoordinates[0] - peakYCoordinates[1]) * scale;
 }
 
-function tileAlignSpec(
-  this: tileAlignSpecType,
-  id: number,
-  tile: numberPair,
-  coordinates: numberPair,
-  root: boolean = false
-) {
-  this.id = id;
-  this.root = root;
-  this.orientation = "vertical";
-  this.scale = 1;
-  this.tile = tile;
-  this.isDouble = this.tile[0] === this.tile[1];
-  this.coordinates = coordinates;
-  this.connectedAt;
-  this.connections = [];
-  // this.setConnection = (
-  //   to,
-  //   tile,
-  //   scale,
-  //   branchHeight,
-  //   branchWidth,
-  //   maxLayoutHeight,
-  //   maxLayoutWidth
-  // ) => {
-  //   const getAttachedTileCoordinate = () => {
-  //     if (this.orientation === "vertical") {
-  //       let attachedTileCoordinate: numberPair;
-  //       if (
-  //         tile[0] === tile[1] ||
-  //         branchHeight + (120 + TILEGAP) * scale > maxLayoutHeight
-  //       )
-  //         attachedTileCoordinate = [
-  //           tile[0] === tile[1] ? this.coordinates[0] : ,
-  //           this.coordinates[1] + 60 + 30 + TILEGAP,
-  //         ];
-  //     } else {
-  //       // assumes this.orientation === "horizontal"
+class TileAlignSpec {
+  /*
+  Tile Positioning and Alignment 
+  spec = [firstHalf, secondHalf, rightSide, leftSide] 
+  where spec is a shape of the connections when the tile is upright (0deg), 
+  
+  e.g when the tile is at 90deg tilt, the firstHalf is on the right,
+  the secondHalf is on the left and so on 
+  
+  0deg = [top, bottom, left, right]
+  90deg = [right, left, top, bottom]
+  -90deg = [left, right, bottom, top]
+  180deg = [bottom, top, right, left]
+  */
 
-  //     }
-  //   };
-  //   /*
-  //   Check 1: Default Positioning -- Check if the tile layout would fit in the playBoard Rect if dropped tiles is placed at the default position
-  //   Default position are connected at [[1], [?]] or [[?], [1]] for mixed and doubles.
-  //   This is default position rule apply to all tile type except for spinners/root tile
-
-  //   If this check is true, a default connection is made else Check 2 is done
-
-  //   */
-  //   const check1: () => boolean = () => {
-  //     if (this.orientation === "vertical") {
-  //       if (tile[0] === tile[1])
-  //         return (
-  //           branchHeight + (60 + TILEGAP) * scale < maxLayoutHeight &&
-  //           branchWidth + (30 + TILEGAP) * scale < maxLayoutWidth
-  //         );
-  //       else
-  //         return (
-  //           branchHeight + (120 + TILEGAP) * scale < maxLayoutHeight ||
-  //           branchHeight + (60 + TILEGAP) * scale < maxLayoutHeight
-  //         );
-  //     } else {
-  //       // assumes this.orientation === "horizontal"
-  //       if (tile[0] === tile[1])
-  //         return (
-  //           branchWidth + (60 + TILEGAP) * scale < maxLayoutHeight &&
-  //           branchHeight + (30 + TILEGAP) * scale < maxLayoutWidth
-  //         );
-  //       else
-  //         return (
-  //           branchWidth + (120 + TILEGAP) * scale < maxLayoutWidth ||
-  //           branchWidth + (60 + TILEGAP) * scale < maxLayoutWidth
-  //         );
-  //     }
-  //   };
-  //   /*
-
-  //   Check 2: Consider Likely Options Based On Drop Preference -- Check if creating a branch based on drop preference would fit in the playBoard Rect
-  //   Branches are connected at [[2 or 3], [?]] or [[?], [2 or 3]] for mixed and doubles.
-
-  //    If this check is true, the connection is made else Check 3 is done
-
-  //    */
-  //   /*
-
-  //   Check 3: Consider Other Likely Options -- Check if creating a branch would fit in the playBoard Rect
-  //   Branches are connected at [[2 or 3], [?]] or [[?], [2 or 3]] for mixed and doubles.
-
-  //    If this check is true, the connection is made else Check 4 is done
-
-  //    */
-
-  //   // Check 4:
-  //   // Scale Down:
-
-  //   if (check1()) {
-  //     if (this.isDouble) this.connectedAt = [[0], [0]];
-  //     else this.connectedAt[this.tile.indexOf(to)] = [1];
-  //   }
-  // };
-  // this.attach = (connectAt) => {
-  //   const newTile = new (tileAlignSpec as any)(tile) as tileAlignSpecType;
-  // };
-
-  this.calcDropLocation = (vec) => {
-    const vec1 = this.coordinates.map(
-      (point, index) => point - vec[index]
-    ) as numberPair;
-    if (this.orientation === "vertical") {
-      const angle = calcVectorAngle(vec1, [0, 100]);
-      if (angle >= 0 && angle <= 45) return "top";
-      else if (angle > 45 && vec1[0] > 0) return "right";
-      else if (angle >= 135) return "bottom";
-      else if (angle > 45 && vec1[0] < 0) return "left";
-    } else {
-      const angle = calcVectorAngle(vec1, [100, 0]);
-      console.log(angle, this.orientation);
-      if (angle >= 0 && angle <= 45) return "left";
-      else if (angle > 45 && vec1[1] > 0) return "top";
-      else if (angle >= 135) return "right";
-      else if (angle > 45 && vec1[1] < 0) return "bottom";
-    }
+  id: number;
+  root: boolean;
+  private _tilt: 0 | 90 | -90 | 180 = 0;
+  scale: number;
+  tile: numberPair;
+  isDouble: boolean;
+  _coordinates: numberPair = [0, 0];
+  private _connectedAt: number[];
+  private _orientationSpec = {
+    "0deg": ["top", "bottom", "left", "right"],
+    "90deg": ["right", "left", "top", "bottom"],
+    "-90deg": ["left", "right", "bottom", "top"],
+    "180deg": ["bottom", "top", "right", "left"],
   };
+  private GAP = 3;
+
+  constructor(tile: tileType, coordinates: numberPair, root: boolean = false) {
+    this.id = tile.id;
+    this.root = root;
+    this.scale = 1;
+    this.tile = tile.tile;
+    this.isDouble = this.tile[0] === this.tile[1];
+    this.coordinates = coordinates;
+    this._connectedAt = [];
+
+    console.info(
+      `${this.root ? "A root anchor" : "An anchor"} with a ${
+        this.isStepper ? "stepper" : this.isDouble ? "double" : "mixed"
+      } tile was created at ${this._coordinates}`
+    );
+  }
+
+  get isStepper() {
+    return this.root && this.isDouble;
+  }
+
+  private get _connectionSpec(): (0 | 1)[] {
+    return this.isStepper
+      ? [1, 1, 1, 1]
+      : this.isDouble
+      ? [0, 0, 1, 1]
+      : [1, 1, 0, 0];
+  }
+
+  get coordinates(): numberPair {
+    const [val1, val2] = this._coordinates;
+    return [val1 - 30, val2 - 60];
+  }
+
+  set coordinates(value: numberPair) {
+    this._coordinates = value;
+  }
+
+  get canAccept() {
+    return this.tile.filter((element) => !this._connectedAt.includes(element));
+  }
+
+  set tilt(value: 0 | 90 | -90 | 180) {
+    this._tilt = value;
+  }
+
+  get tilt() {
+    return this._tilt;
+  }
+
+  private _getAvailableDropPosition(
+    connectingHalveIndex: number,
+    dropSide: string
+  ) {
+    const orientation = this._orientationSpec[`${this.tilt}deg`];
+    const connectingDotCount = this.tile[connectingHalveIndex];
+    let actualDropPosition: [string] = [""];
+    console.log(orientation, this.tilt);
+    if (!this.isDouble) {
+      if (this._connectionSpec[connectingHalveIndex]) {
+        this._connectionSpec[connectingHalveIndex] = 0;
+        this._connectedAt.push(connectingDotCount);
+        actualDropPosition = [orientation[connectingHalveIndex]];
+      } else
+        console.error(
+          `Couldn't index _connectioSpec with index ${connectingHalveIndex}`
+        );
+    } else {
+      const connectingHalveIndex = orientation.indexOf(dropSide);
+
+      if (this._connectionSpec[connectingHalveIndex]) {
+        this._connectionSpec[connectingHalveIndex] = 0;
+        this._connectedAt.push(connectingDotCount);
+        actualDropPosition = [orientation[connectingHalveIndex]]; // = dropSide
+      } else {
+        const availableHalveIndex = this._connectionSpec.indexOf(1);
+        if (availableHalveIndex !== -1) {
+          this._connectionSpec[connectingHalveIndex] = 0;
+          this._connectedAt.push(connectingDotCount);
+          actualDropPosition = [orientation[availableHalveIndex]];
+        } else console.error("couldn't find '1' in _connectionSpec");
+      }
+    }
+
+    console.info(
+      `A connection should be made on the ${actualDropPosition} of tile with id ${this.id}`
+    );
+    return actualDropPosition;
+  }
+
+  private _calcBoundingBorder(position: string) {
+    let coordinates: numberPair = [0, 0];
+    if (this._tilt === 0 || this.tilt === 180) {
+      switch (position) {
+        case "top":
+          coordinates = [
+            this._coordinates[0],
+            this._coordinates[1] - (60 + this.GAP) * this.scale,
+          ];
+          break;
+        case "bottom":
+          coordinates = [
+            this._coordinates[0],
+            this._coordinates[1] + (60 + this.GAP) * this.scale,
+          ];
+          break;
+        case "left":
+          coordinates = [
+            this._coordinates[0] - (30 + this.GAP) * this.scale,
+            this._coordinates[1],
+          ];
+          break;
+        case "right":
+          coordinates = [
+            this._coordinates[0] + (30 + this.GAP) * this.scale,
+            this._coordinates[1],
+          ];
+          break;
+      }
+    } else {
+      switch (position) {
+        case "top":
+          coordinates = [
+            this._coordinates[0],
+            this._coordinates[1] - (30 + this.GAP) * this.scale,
+          ];
+          break;
+        case "bottom":
+          coordinates = [
+            this._coordinates[0],
+            this._coordinates[1] + (30 + this.GAP) * this.scale,
+          ];
+          break;
+        case "left":
+          coordinates = [
+            this._coordinates[0] - (60 + this.GAP) * this.scale,
+            this._coordinates[1],
+          ];
+          break;
+        case "right":
+          coordinates = [
+            this._coordinates[0] + (60 + this.GAP) * this.scale,
+            this._coordinates[1],
+          ];
+          break;
+      }
+    }
+
+    console.info(`Boundary cordinate at ${coordinates}`);
+    return coordinates;
+  }
+
+  private _calcRelativeDropPosition([cor1, cor2]: numberPair): string {
+    const vec = [
+      (this._coordinates[0] - cor1) * -1,
+      this._coordinates[1] - cor2,
+    ] as numberPair;
+
+    let position: string = "";
+    const angle = calcVectorAngle(vec, [0, 100]);
+    if (angle >= 0 && angle <= 45) position = "top";
+    else if (angle > 45 && angle < 135) {
+      if (vec[0] > 0) position = "right";
+      else position = "left";
+    } else position = "bottom";
+
+    console.info(`A tile was dropped at the ${position} of another tile`);
+    return position;
+  }
+
+  setConnection(tileSpec: TileAlignSpec) {
+    const { _coordinates, tile: incomingTile } = tileSpec;
+    const relativePosition = this._calcRelativeDropPosition(_coordinates);
+    const connectingHalveIndex = this.tile.indexOf(
+      this.tile.find((num) => incomingTile.includes(num)) as number
+    ) as 0 | 1;
+    const availableDropPosition = this._getAvailableDropPosition(
+      connectingHalveIndex,
+      relativePosition
+    );
+    const attachBoundaryCoordinates = this._calcBoundingBorder(
+      ...availableDropPosition
+    );
+    const newConnection = new TileAlignSpec(
+      { id: tileSpec.id, tile: tileSpec.tile },
+      attachBoundaryCoordinates
+    );
+    newConnection.setIn(
+      ...availableDropPosition,
+      connectingHalveIndex,
+      this.scale
+    );
+    return newConnection;
+  }
+
+  setIn(conectingPosition: string, connectingHalveIndex: 1 | 0, scale: number) {
+    let tilt: 0 | 90 | -90 | 180 = 0;
+    let boundaryExtensionCoordinates: numberPair = this._coordinates;
+    if (!connectingHalveIndex) {
+      switch (conectingPosition) {
+        case "top":
+          tilt = 180;
+          boundaryExtensionCoordinates[1] -= 60 * scale;
+          break;
+        case "bottom":
+          tilt = 0;
+          boundaryExtensionCoordinates[1] += 60 * scale;
+          break;
+        case "left":
+          tilt = 90;
+          boundaryExtensionCoordinates[0] -= 60 * scale;
+          break;
+        case "right":
+          tilt = -90;
+          boundaryExtensionCoordinates[0] += 60 * scale;
+          break;
+      }
+    } else {
+      switch (conectingPosition) {
+        case "top":
+          tilt = 0;
+          boundaryExtensionCoordinates[1] -= 60 * scale;
+          break;
+        case "bottom":
+          tilt = 180;
+          boundaryExtensionCoordinates[1] += 60 * scale;
+          break;
+        case "left":
+          tilt = -90;
+          boundaryExtensionCoordinates[0] -= 60 * scale;
+          break;
+        case "right":
+          tilt = 90;
+          boundaryExtensionCoordinates[0] += (60 + this.GAP) * scale;
+          break;
+      }
+    }
+
+    this.coordinates = boundaryExtensionCoordinates;
+    this.tilt = tilt;
+    this.scale = scale;
+    console.info(`Anchor ${this.id} set in at ${this.coordinates}`)
+  }
 }
 
 function GameBoard() {
-  const [anchors, setAnchors] = useState<tileAlignSpecType[]>([]);
-  const [defaultDrop, setDefaultDrop] = useState<boolean>(false);
+  const [anchors, setAnchors] = useState<TileAlignSpec[]>([]);
+  const [defaultDrop, setDefaultDrop] = useState<boolean>(true);
   const [playBoardRef, bounds] = useMeasure();
+  const dynamicTileBound = useRef<numberPair>([0, 0]);
   const activeHover = useRef<number | null>(null);
   const droppedTile = useRef<number | null>(null);
   const droppedOn = useRef<number | null>(null);
-  
+
   const initailSetAnchor = (
     tile: tileType,
     coordinates: numberPair,
@@ -153,19 +305,14 @@ function GameBoard() {
       coordinates[0] - bounds.x,
       coordinates[1] - bounds.y,
     ];
-    const newTile = new (tileAlignSpec as any)(
-      tile.id,
-      tile.tile,
-      tileCoordinate
-    );
+    const newTile = new TileAlignSpec(tile, tileCoordinate);
     setAnchors((prevState) => [...prevState, newTile]);
     droppedTile.current = tile.id;
     droppedOn.current = id;
   };
 
   useEffect(() => {
-    if (anchors.length === 0) setDefaultDrop(true);
-    else if (anchors.length === 1) {
+    if (anchors.length === 1) {
       const [midX, midY] = [
         (bounds.right - bounds.left) / 2,
         (bounds.bottom - bounds.top) / 2,
@@ -174,71 +321,81 @@ function GameBoard() {
         anchor.map((root) => {
           root.root = true;
           root.coordinates = [midX, midY];
-          root.scale = 0.95;
-          root.orientation =
-            root.tile[0] === root.tile[1] ? "vertical" : "horizontal";
+          root.scale = 1;
+          root.tilt = root.tile[0] === root.tile[1] ? 0 : 90;
           return root;
         })
       );
-      setDefaultDrop(false);
     } else {
       if (droppedTile.current !== -1) {
-        console.log(
-          anchors
-            .find((anchor) => anchor.id === droppedOn.current)
-            ?.calcDropLocation(
-              anchors.find((anchor) => anchor.id === droppedTile.current)
-                ?.coordinates as numberPair
-            )
+        const triggeredAnchor = anchors.find(
+          (anchor) => anchor.id === droppedOn.current
         );
+
+        const droppedAnchor = anchors.find(
+          (anchor) => anchor.id === droppedTile.current
+        );
+        const newDroppedAnchor = triggeredAnchor?.setConnection(droppedAnchor);
+
+        // if (newDroppedAnchor) {
+        //   setAnchors((arr) => {
+            
+        //   });
+        // }
       }
     }
   }, [anchors.length, bounds]);
-  // console.log('anchors.length, defaultDrop');
 
-  
+  const registerDrop = (count: number) => {
+    if (count !== 0) setDefaultDrop(false);
+  };
   return (
-    <div>
-      <div
-        id="play-board"
-        ref={playBoardRef}
-        className="absolute top-10 h-3/4 w-full bg-green"
-      >
-        {anchors.map(({ coordinates, tile, orientation, scale, id }, index) => (
+    <div
+      id="play-board"
+      ref={playBoardRef}
+      className="absolute top-10 h-3/4 w-full z-0"
+    >
+      {anchors.map(
+        ({ root, coordinates, canAccept, tile, tilt, scale, id }) => (
           <>
             <Anchor
-              key={index}
+              key={id}
               {...{
+                root,
                 coordinates,
                 tile: { id, tile },
-                tilt: orientation === "vertical" ? 0 : 90,
+                tilt,
+                canAccept,
                 scale,
                 initailSetAnchor,
                 activeHover,
               }}
             />
             <div
-              className="w-1 h-1 rounded-full absolute z-40 bg-red-500 "
-              style={{ top: coordinates[1], left: coordinates[0] }}
-            />
+              className="w-1 h-1 bg-red-900 absolute z-50"
+              style={{
+                top: (bounds.bottom - bounds.top) / 2,
+                right: (bounds.right - bounds.left) / 2,
+              }}
+            ></div>
           </>
-        ))}
-        {defaultDrop && (
-          <DropZone
-            {...{
-              position: [
-                (bounds.right - bounds.left) / 2,
-                (bounds.bottom - bounds.top) / 2,
-              ],
-              acceptedDotCount: [1, 2, 3, 4, 5, 6],
-              initailSetAnchor,
-              activeHover,
-              id: -1,
-              scale: 1,
-            }}
-          />
-        )}
-      </div>
+        )
+      )}
+      {defaultDrop && (
+        <DropZone
+          {...{
+            position: [
+              (bounds.right - bounds.left) / 2,
+              (bounds.bottom - bounds.top) / 2,
+            ],
+            initailSetAnchor,
+            activeHover,
+            id: 0,
+            scale: 1,
+            registerDrop,
+          }}
+        />
+      )}
     </div>
   );
 }

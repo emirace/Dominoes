@@ -8,48 +8,18 @@ import GameBoard from "@/components/GameBoard";
 import { GameProvider } from "@/components/GameProvider";
 import OpponentDeck from "@/components/OpponentDeck";
 import BoneYard from "@/components/BoneYard";
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import { useSocket } from "@/components/SocketProvider";
-import useCreateAPI from "@/utils/api";
-import { toast } from "react-toastify";
-import { Game, numberPair } from "@/types";
-import useCurrentUser from "@/hooks/useCurrentUser";
-import { useRouter } from "next/navigation";
+import React from "react";
 
-function GamePage({ params }: { params: { slug: string } }) {
-  const [game, setGame] = useState<Game | null>(null);
 
-  // console.log(boneyard, deck, isTurn);
-
+function GamePage() {
   return (
     <GameProvider>
       <div
         id="game"
-        className='bg-dark-blue bg-[url("/game-bg.png")] relative bg-cover justify-center bg-center flex items-end min-w-screen min-h-screen overflow-hidden'
+        className='bg-dark-blue bg-[url("/game-bg.png")] relative bg-cover justify-center bg-center flex items-end min-w-screen min-h-screen overflow-hidden z-0'
       >
         <div className="bg-main-blue  relative border-[9px] rounded-2xl border-black-15 w-full min-h-[calc(100vh_-_24px)] h-full max-w-[700px]">
           <div className="bg-main-blue rounded-9 w-full h-full"></div>
-          <div
-            id="current-player"
-            className="absolute -bottom-2 bg-[#617187] w-[calc(100%_+_6px)] rounded-t-9 -left-0.5 flex p-2 justify-between items-center z-10"
-          >
-            <div className="w-[60px] h-[60px]">
-              <Image
-                src="/default-avatar.png"
-                width={60}
-                height={60}
-                alt="avatar"
-                className="rounded-lg"
-              />
-            </div>
-
-            <PlayerDeck />
-
-            <div className="text-center">
-              <p>0</p>
-              <p className="text-xs text-[#afb7c1]">points</p>
-            </div>
-          </div>
 
           <Link id="back-button" className="pointer-events-auto" href="/">
             <div className="absolute flex items-center justify-center -left-8 top-12 bg-main-orange w-[60px] h-[60px] rounded-9">
@@ -70,6 +40,7 @@ function GamePage({ params }: { params: { slug: string } }) {
             />
             <p>20</p>
           </div>
+          <PlayerDeck />
           <GameBoard />
           <BoneYard />
         </div>

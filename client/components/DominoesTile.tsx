@@ -20,7 +20,7 @@ function DominoesTile({ tile: {tile}, size = "normal"}: DominoesTileProps) {
   return (
     <div
       ref={ref}
-      className="tile transition-all rounded-xl"
+      className="tile transition-all rounded-md"
       style={{
         backgroundPosition: `-${80 * tilePosition[1]}px -${
           140 * tilePosition[0]

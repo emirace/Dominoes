@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import DeckTile from "./DeckTile";
 import {
   useTransition,
@@ -12,7 +13,7 @@ import { useGameContext } from "./GameProvider";
 import useDistributor, { requestType } from "@/hooks/useDistributor";
 
 function PlayerDeck() {
-  const { permits } = useGameContext();
+  const { permits, draggedTile } = useGameContext();
   const [hand, setHand, from, boundRef, requestTile] = useDistributor(
     requestType.MAIN_DECK
   );
@@ -20,7 +21,7 @@ function PlayerDeck() {
   const springRef = useSpringRef();
   const springProp = useSpring({
     ref: springRef,
-    width: hand.lboneYardDistSpecength * 64 - 4,
+    width: hand.length * 64 - 4,
     config: config.stiff,
   });
 
@@ -43,31 +44,54 @@ function PlayerDeck() {
   useChain([springRef, transRef], [0, 0]);
 
   const onDropComplete = ({ id }: { id: number }) => {
-    return setHand((prevArr) => prevArr.filter((tile) => tile.id !== id));
+    setHand((prevArr) => prevArr.filter((tile) => tile.id !== id));
   };
 
-  useEffect(() => {
-    const needTile =
-      hand.length &&
-      !hand.some(({ tile }) => permits.some((item) => tile.includes(item)));
+  // useEffect(() => {
+  //   const needTile =
+  //     hand.length &&
+  //     !hand.some(({ tile }) => permits.some((item) => tile.includes(item)));
 
-    if (needTile) {
-      requestTile();
-    }
-  }, [permits]);
+  //   if (needTile) {
+  //     requestTile();
+  //   }
+  // }, [permits]);
 
   return (
-    <animated.div
-      ref={boundRef}
-      style={springProp}
-      className="absolute flex left-[50%] translate-x-[-50%] items-center self-end gap-1 h-[120px]"
+    <div
+      id="current-player"
+      className="absolute -bottom-2 bg-[#617187] w-[calc(100%_+_6px)] rounded-t-9 -left-0.5 flex p-2 justify-between items-center "
+      style={{
+        zIndex: draggedTile ? 0 : 20,
+      }}
     >
-      {transitions((style, tile) => (
-        <animated.div key={tile.id} style={style}>
-          <DeckTile {...{ tile, onDropComplete }} />
-        </animated.div>
-      ))}
-    </animated.div>
+      <div className="w-[60px] h-[60px]">
+        <Image
+          src="/default-avatar.png"
+          width={60}
+          height={60}
+          alt="avatar"
+          className="rounded-lg"
+        />
+      </div>
+
+      <animated.div
+        ref={boundRef}
+        style={{ ...springProp }}
+        className="absolute flex left-[50%] translate-x-[-50%] items-center self-end gap-1 h-[120px]"
+      >
+        {transitions((style, tile) => (
+          <animated.div key={tile.id} style={style}>
+            <DeckTile {...{ tile, onDropComplete }} />
+          </animated.div>
+        ))}
+      </animated.div>
+
+      <div className="text-center">
+        <p>0</p>
+        <p className="text-xs text-[#afb7c1]">points</p>
+      </div>
+    </div>
   );
 }
 

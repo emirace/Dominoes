@@ -4,30 +4,24 @@ import { DropZoneProp } from "@/types";
 import { useGameContext } from "./GameProvider";
 
 function DropZone({
-  acceptedDotCount,
   position,
   initailSetAnchor,
   activeHover,
   id,
   scale,
+  registerDrop,
 }: DropZoneProp) {
-  const [canDrop, setCanDrop] = useState(false);
-  const { draggedTile, setRecentlyDroppedTile } = useGameContext();
+  const { draggedTile, recentlyDroppedTile } = useGameContext();
 
-  useEffect(() => {
-    if (
-      draggedTile &&
-      acceptedDotCount.some((i) => draggedTile.tile.includes(i))
-    )
-      setCanDrop(true);
-  }, [acceptedDotCount, draggedTile]);
 
   const bind = useHover(({ xy: [x, y], hovering }) => {
     if (hovering) {
       activeHover.current = activeHover.current || id;
+      
+      if (draggedTile && activeHover.current === id) {
+        recentlyDroppedTile.current = draggedTile;
+        registerDrop(1);
 
-      if (draggedTile && activeHover.current === id && canDrop) {
-        setRecentlyDroppedTile(draggedTile);
         initailSetAnchor(draggedTile, [x, y], id);
         activeHover.current = null;
       }
@@ -40,7 +34,7 @@ function DropZone({
     <div
       {...bind()}
       className={`-translate-x-1/2 -translate-y-1/2 ${
-        canDrop ? "bg-transparent" : "bg-transparent"
+         "bg-main-orange/50" 
       }  `}
       style={{
         width: `${400 * scale}px`,
@@ -49,7 +43,6 @@ function DropZone({
         top: position ? `${position[1]}px` : "0",
         left: position ? `${position[0]}px` : "0",
         transition: "background-color 100ms ease-in-out 10ms",
-        zIndex: activeHover.current === id ? 15 : 0,
       }}
     />
   );

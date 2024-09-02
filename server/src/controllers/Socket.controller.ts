@@ -12,7 +12,7 @@ import { numberPair } from '../types';
 const SocketController = {
   createGame: async (socket: Socket, io: Server, token?: string) => {
     try {
-      console.log('called');
+      // console.log('called');
       const gameId = generateRandomCharacters();
 
       const res = await axios
@@ -26,9 +26,9 @@ const SocketController = {
         return;
       }
 
-      console.log(socket.rooms, '1000');
+      // console.log(socket.rooms, '1000');
       await socket.join(gameId);
-      console.log(socket.rooms, '20001');
+      // console.log(socket.rooms, '20001');
       socket.emit('gameCreated', { gameId });
       io.emit('newGameCreated', { game: res.data.data });
       return true;
@@ -39,9 +39,9 @@ const SocketController = {
 
   startGame: async (io: Server, gameId: string, playerId: number) => {
     try {
-      console.log('called');
+      // console.log('called');
       const boneyard = generateBoneyard();
-      const encryptedBoneyard = encrypt(JSON.stringify(boneyard));
+      // const encryptedBoneyard = encrypt(JSON.stringify(boneyard));
       const player1Choices: number[] = [];
       const player2Choices: number[] = [];
       while (player1Choices.length < 7 || player2Choices.length < 7) {
@@ -64,7 +64,7 @@ const SocketController = {
       const max2 = findLargestDouble(player2Choices.map((i) => boneyard[i]));
       let turn =
         max1 < 0 && max2 < 0 ? -1 : max1 > max2 ? 0 : max2 > max1 ? 1 : -1;
-      console.log(player1Choices, player2Choices, turn, max1, max2);
+      // console.log(player1Choices, player2Choices, turn, max1, max2);
 
       setTimeout(() => {
         io.to(gameId).emit('boneyard', {
@@ -86,7 +86,7 @@ const SocketController = {
       }
       return true;
     } catch (err: any) {
-      console.log(err);
+      // console.log(err);
       throw new Error(err.message);
     }
   },
@@ -107,25 +107,25 @@ const SocketController = {
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } catch (err: any) {
-        console.log(err);
+        // console.log(err);
         if (err.response.status === 400) {
           return;
         }
         socket.emit('joinGameError');
       }
 
-      console.log(res, 'ressss');
+      // console.log(res, 'ressss');
       // Check if res is defined before accessing its properties
       if (!res) {
-        console.log('Request failed, no response data');
+        // console.log('Request failed, no response data');
         // Do something with the game data
         return;
       }
 
       const game = res.data.data;
-      console.log(socket.rooms, '1111');
+      // console.log(socket.rooms, '1111');
       await socket.join(gameId);
-      console.log(socket.rooms, '2221');
+      // console.log(socket.rooms, '2221');
 
       io.to(gameId).emit('gameJoined', { game });
       // socket.emit('gameJoined', { game });

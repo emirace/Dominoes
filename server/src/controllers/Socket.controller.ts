@@ -37,10 +37,11 @@ const SocketController = {
     }
   },
 
-  startGame: async (io: Server, gameId: string, playerId: number) => {
+  startGame: async (socket: Socket, gameId: string, playerId: number) => {
     try {
       console.log('called');
-      const boneyard = generateBoneyard();
+      const game = await GameModel.findOne({ gameId });
+      let boneyard = generateBoneyard();
       const encryptedBoneyard = encrypt(JSON.stringify(boneyard));
       const player1Choices: number[] = [];
       const player2Choices: number[] = [];
@@ -64,10 +65,10 @@ const SocketController = {
       const max2 = findLargestDouble(player2Choices.map((i) => boneyard[i]));
       let turn =
         max1 < 0 && max2 < 0 ? -1 : max1 > max2 ? 0 : max2 > max1 ? 1 : -1;
-      console.log(player1Choices, player2Choices, turn, max1, max2);
 
       setTimeout(() => {
-        io.to(gameId).emit('boneyard', {
+        // Emit to the current player
+        socket.emit('boneyard', {
           encryptedBoneyard: boneyard,
           choices:
             playerId === 0
@@ -75,18 +76,56 @@ const SocketController = {
               : playerId === 1
               ? player2Choices
               : null,
-          turn,
+          isTurn: turn === playerId, // Check if it's the current player's turn
         });
-      }, 2000);
-      const game = await GameModel.findOne({ gameId });
+
+        // Broadcast to the other player
+        socket.broadcast.emit('boneyard', {
+          encryptedBoneyard: boneyard,
+          choices:
+            playerId === 0
+              ? player2Choices
+              : playerId === 1
+              ? player1Choices
+              : null,
+          isTurn: turn !== playerId && turn !== -1, // It's the other player's turn if turn !== -1
+        });
+      }, 500);
+
       if (game) {
-        game.gameData = {boneyard};
+        game.gameData = { ...game.gameData, boneyard };
         game.turn = turn === 0 ? 0 : 1;
         await game.save();
       }
       return true;
     } catch (err: any) {
       console.log(err);
+      throw new Error(err.message);
+    }
+  },
+
+  handleReady: async (
+    gameId: string,
+    socket: Socket,
+    io: Server,
+    playerId: number
+  ) => {
+    try {
+      const game = await GameModel.findOne({ gameId });
+      const isOtherPlayerReady =
+        playerId === 0
+          ? game?.gameData.player2Ready
+          : playerId === 1
+          ? game?.gameData.player2Ready
+          : undefined;
+      playerId > -1 && io.to(gameId).emit('playerReady', playerId);
+
+      if (isOtherPlayerReady) {
+        SocketController.startGame(socket, gameId, playerId);
+      }
+
+      return true;
+    } catch (err: any) {
       throw new Error(err.message);
     }
   },

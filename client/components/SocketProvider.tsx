@@ -35,6 +35,9 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
     if (!token) {
       // return router.push("/auth");
     }
+    if (socket) {
+      return;
+    }
 
     const URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
     const newSocket = io(URL, {

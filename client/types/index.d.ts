@@ -79,18 +79,26 @@ export interface boneYardDistSpecType {
   callbacks: ((position: numberPair) => tileType | undefined)[];
 }
 
+export type PlayerId = -1 | 0 | 1;
+
 export interface GameContextType {
   draggedTile: tileType | null;
   setDraggedTile: React.Dispatch<React.SetStateAction<TileType>>;
   recentlyDroppedTile: tileType | null;
   setRecentlyDroppedTile: React.Dispatch<React.SetStateAction<tileType | null>>;
   deck: numberPair[];
+  isTurn: boolean;
+  firstPlayer: number;
+  playerId: PlayerId;
+  setFirstPlayer: React.Dispatch<React.SetStateAction<number>>;
 
   selectFromBoneYard: () => tileType;
   setDeck: (deck: numberPair[]) => void;
 
   permits: number[];
   setPermits: React.Dispatch<React.SetStateAction<number[]>>;
+  canPlay: boolean;
+  setCanPlay: React.Dispatch<React.SetStateAction<boolean>>;
 
   boneYardDistSpec: boneYardDistSpecType;
   setBoneYardDistSpec: React.Dispatch<
@@ -106,6 +114,12 @@ export interface GameContextType {
     required?: number[],
     amount?: number
   ) => void;
+}
+
+export interface AlertProps {
+  text: string;
+  subText?: string;
+  isTop?: boolean;
 }
 
 export type useDistributorType = [

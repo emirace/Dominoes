@@ -26,7 +26,11 @@ export const generateBoneyard = () => {
     }
   }
 
-  return shuffleArray(boneyard);
+  const arrangedBoneyard: numberPair[] = boneyard.map((tile) =>
+    tile[1] > tile[0] ? [tile[1], tile[0]] : tile
+  );
+
+  return shuffleArray(arrangedBoneyard);
 };
 
 export const findLargestDouble = (pair: numberPair[]) => {

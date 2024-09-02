@@ -12,10 +12,11 @@ import { useGameContext } from "./GameProvider";
 import useDistributor, { requestType } from "@/hooks/useDistributor";
 
 function PlayerDeck() {
-  const { permits } = useGameContext();
+  const { permits, canPlay } = useGameContext();
   const [hand, setHand, from, boundRef, requestTile] = useDistributor(
     requestType.MAIN_DECK
   );
+  const canPlayStyles = canPlay ? "" : "opacity-80 pointer-events-none";
 
   const springRef = useSpringRef();
   const springProp = useSpring({
@@ -60,7 +61,7 @@ function PlayerDeck() {
     <animated.div
       ref={boundRef}
       style={springProp}
-      className="absolute flex left-[50%] translate-x-[-50%] items-center self-end gap-1 h-[120px]"
+      className={`absolute flex left-[50%] translate-x-[-50%] items-center self-end gap-1 h-[120px] ${canPlayStyles}`}
     >
       {transitions((style, tile) => (
         <animated.div key={tile.id} style={style}>

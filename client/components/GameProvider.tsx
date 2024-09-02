@@ -13,6 +13,7 @@ import {
   tileType,
   boneYardDistSpecType,
   Game,
+  PlayerId,
 } from "@/types";
 import { useSocket } from "./SocketProvider";
 import { useParams, useRouter } from "next/navigation";
@@ -33,10 +34,15 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const { socket } = useSocket();
   const API = useCreateAPI();
   const { user } = useCurrentUser();
-  const playerId = useMemo(
-    () => game?.players.findIndex((player) => player._id === user?._id) ?? -1,
-    [game?.players]
-  );
+  // console.log(game, user);
+
+  const playerId: PlayerId = useMemo(() => {
+    const index = game?.players.findIndex((player) => player._id === user?._id);
+    console.log(index);
+    return index !== -1 ? (index as PlayerId) : (null as any);
+  }, [game, user]);
+
+  const [firstPlayer, setFirstPlayer] = useState(-2);
   const [permits, setPermits] = useState<number[]>([9]);
   const [distCallback, setDistCallback] = useState<
     ((position: numberPair) => tileType | undefined)[]
@@ -53,6 +59,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     });
 
   const [isTurn, setIsTurn] = useState(false);
+  const [canPlay, setCanPlay] = useState(false);
   const [boneyard, setBoneyard] = useState<numberPair[]>([]);
   const [deck, setDeck] = useState<numberPair[]>([]);
 
@@ -115,15 +122,18 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
           setTimeout(() => router.push("/"), 2000);
         });
 
-      socket.on("boneyard", ({ encryptedBoneyard, choices, turn }) => {
-        console.log("gameJoined", encryptedBoneyard);
-        // const decryptedBoneyard = decrypt(encryptedBoneyard);
-        console.log({ encryptedBoneyard, turn, choices });
-        encryptedBoneyard && setBoneyard(encryptedBoneyard);
-        const userDeck = choices.map((i: number) => encryptedBoneyard[i]);
-        boneYardTile.current = makeTile(userDeck);
-        setDeck(userDeck);
-        setIsTurn(turn === playerId);
+      socket.on("boneyard", ({ encryptedBoneyard, choices, isTurn }) => {
+        if (!boneYardTile.current.length) {
+          console.log("gameJoined", encryptedBoneyard);
+          // const decryptedBoneyard = decrypt(encryptedBoneyard);
+          console.log({ encryptedBoneyard, isTurn, choices, playerId });
+          encryptedBoneyard && setBoneyard(encryptedBoneyard);
+          const userDeck = choices.map((i: number) => encryptedBoneyard[i]);
+          console.log(userDeck, typeof playerId, typeof isTurn);
+          boneYardTile.current = makeTile(userDeck);
+          setDeck(userDeck);
+          setIsTurn(isTurn);
+        }
       });
 
       return () => {
@@ -132,28 +142,27 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         socket.off("joinGameError");
       };
     }
-  }, [socket]);
+  }, [socket, playerId]);
 
   useEffect(() => {
     console.log(boneYardTile.current);
-    if (!boneYardTile.current.length && distCallback.length !== 2) return;
+    if (!boneYardTile.current.length) return;
 
     // setTimeout(() => {
-      setDistCallback((arr) => {
-        const requestSpec = {
-          active: true,
-          distribute: true,
-          instant: true,
-          drawAmount: 6,
-          callbacks: arr,
-        };
-        setBoneYardDistSpec((prevObj) => ({ ...prevObj, ...requestSpec }));
+    setDistCallback((arr) => {
+      const requestSpec = {
+        active: true,
+        distribute: true,
+        instant: true,
+        drawAmount: 7,
+        callbacks: arr,
+      };
+      setBoneYardDistSpec((prevObj) => ({ ...prevObj, ...requestSpec }));
 
-        return arr;
-      });
+      return arr;
+    });
     // }, 0);
   }, [boneYardTile.current, distCallback]);
-
 
   return (
     <GameContext.Provider
@@ -169,9 +178,15 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setDeck,
         permits,
         setPermits,
+        isTurn,
         registerDistCallback,
         unRegisterDistCallback,
         requestTile,
+        playerId,
+        firstPlayer,
+        setFirstPlayer,
+        canPlay: canPlay && isTurn,
+        setCanPlay,
       }}
     >
       {children}

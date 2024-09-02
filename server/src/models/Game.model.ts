@@ -8,6 +8,8 @@ export interface Game {
   active: boolean;
   players: User[];
   gameData: {
+    player1Ready: boolean;
+    player2Ready: boolean;
     boneyard: numberPair[];
   };
   turn: 0 | 1;
@@ -45,6 +47,14 @@ const gameSchema = new mongoose.Schema<Game>(
       boneyard: {
         type: [[Number, Number]],
         default: [],
+      },
+      player1Ready: {
+        type: Boolean,
+        default: false,
+      },
+      player2Ready: {
+        type: Boolean,
+        default: false,
       },
     },
   },

@@ -12,7 +12,7 @@ function DeckTile({
   tile: tileType;
   onDropComplete: any;
 }) {
-  const { draggedTile, setDraggedTile, setRecentlyDroppedTile } =
+  const { draggedTile, canPlay, setDraggedTile, setRecentlyDroppedTile } =
     useGameContext();
 
   const [springProp, api] = useSpring(() => ({
@@ -22,6 +22,7 @@ function DeckTile({
   }));
 
   const bind = useDrag(({ movement: [x, y], active }) => {
+    if (!canPlay) return;
     if (!draggedTile && active) setDraggedTile(tile);
     else if (!active)
       setTimeout(() => {
@@ -49,7 +50,11 @@ function DeckTile({
       });
   });
   return (
-    <animated.div {...bind()} style={springProp} className={`touch-none z-10 relative`}>
+    <animated.div
+      {...bind()}
+      style={springProp}
+      className={`touch-none z-10 relative`}
+    >
       <DominoesTile {...{ tile }} />
     </animated.div>
   );

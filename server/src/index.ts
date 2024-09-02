@@ -55,11 +55,11 @@ io.on('connection', (socket) => {
   });
   socket.on('ready', ({ gameId, player }) => {
     console.log('ready', socket.rooms);
-    player > -1 && io.to(gameId).emit('playerReady', player);
+    SocketController.handleReady(gameId, socket, io, player);
   });
   socket.on('startGame', ({ gameId, playerId }) => {
     console.log('start', socket.rooms);
-    SocketController.startGame(io, gameId, playerId);
+    SocketController.startGame(socket, gameId, playerId);
   });
   socket.on('disconnect', () => {
     console.log(socket.id + 'has disconnected');

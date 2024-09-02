@@ -5,8 +5,18 @@ import { useGameContext } from "./GameProvider";
 import { numberPair } from "@/types";
 
 function BoneYard() {
-  const { boneYardDistSpec, deck, setBoneYardDistSpec, setDeck, setPermits } =
-    useGameContext();
+  const {
+    boneYardDistSpec,
+    playerId,
+    firstPlayer,
+    isTurn,
+    deck,
+    canPlay,
+    setCanPlay,
+    setBoneYardDistSpec,
+    setFirstPlayer,
+    setPermits,
+  } = useGameContext();
   const gridRef = useRef<HTMLDivElement | null>(null);
   const complete = useRef(0);
 
@@ -23,6 +33,7 @@ function BoneYard() {
 
   useEffect(() => {
     if (boneYardDistSpec.distribute && deck) {
+      setCanPlay(false);
       for (let i = 0; i < boneYardDistSpec.callbacks.length; i++) {
         const callback = boneYardDistSpec.callbacks[i];
 
@@ -46,6 +57,11 @@ function BoneYard() {
                   required: [],
                   callbacks: [],
                 });
+                if (firstPlayer === -2) {
+                  console.log("First player", isTurn);
+                  setFirstPlayer(isTurn ? playerId : playerId === 0 ? 1 : 0);
+                }
+                setCanPlay(true);
                 setPermits([19, 10]);
               }
             }

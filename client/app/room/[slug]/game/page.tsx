@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft } from "react-feather";
 import PlayerDeck from "@/components/PlayerDeck";
 import GameBoard from "@/components/GameBoard";
-import { GameProvider } from "@/components/GameProvider";
+import { GameProvider, useGameContext } from "@/components/GameProvider";
 import OpponentDeck from "@/components/OpponentDeck";
 import BoneYard from "@/components/BoneYard";
 import React, { useState, useRef, useEffect, useMemo } from "react";
@@ -15,6 +15,7 @@ import { toast } from "react-toastify";
 import { Game, numberPair } from "@/types";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { useRouter } from "next/navigation";
+import FirstPlay from "@/components/FirstPlay";
 
 function GamePage({ params }: { params: { slug: string } }) {
   const [game, setGame] = useState<Game | null>(null);
@@ -51,8 +52,8 @@ function GamePage({ params }: { params: { slug: string } }) {
             </div>
           </div>
 
-          <Link id="back-button" className="pointer-events-auto" href="/">
-            <div className="absolute flex items-center justify-center -left-8 top-12 bg-main-orange w-[60px] h-[60px] rounded-9">
+          <Link id="back-button" className="pointer-events-auto z-[2]" href="/">
+            <div className="absolute flex items-center justify-center z-[2] -left-8 top-12 bg-main-orange w-[60px] h-[60px] rounded-9">
               <ArrowLeft size={24} color="#ffffff" />
             </div>
           </Link>
@@ -72,6 +73,7 @@ function GamePage({ params }: { params: { slug: string } }) {
           </div>
           <GameBoard />
           <BoneYard />
+          <FirstPlay />
         </div>
         <OpponentDeck />
       </div>

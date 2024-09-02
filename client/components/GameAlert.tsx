@@ -1,7 +1,8 @@
 import { AlertProps } from "@/types";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 function GameAlert({ text, subText, isTop = false }: AlertProps) {
+  const [isVisible, setIsVisible] = useState(true);
   const alertRef = React.useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -16,8 +17,18 @@ function GameAlert({ text, subText, isTop = false }: AlertProps) {
           isTop ? "-50px" : "50px"
         }) scale(0.4)`;
       }, 3000);
+
+      const hideTimer = setTimeout(() => {
+        setIsVisible(false);
+      }, 4000);
+
+      return () => clearTimeout(hideTimer);
     }
   }, []);
+
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <div

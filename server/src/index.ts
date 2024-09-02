@@ -35,22 +35,15 @@ const io = new Server(httpServer, {
 });
 
 io.engine.use(socketMiddleware);
-app.use(errorHandler);
 
 io.on('connection', (socket) => {
-  // console.log('up');
-  console.log(socket.id + socket.request.user + 'has connected');
-  console.log(socket.rooms);
   socket.on('createGame', () => {
-    console.log('createGame', socket.rooms);
     SocketController.createGame(socket, io, socket.request.token);
   });
   socket.on('joinGame', ({ gameId }) => {
-    console.log('joinGame', socket.rooms);
     SocketController.joinGame(gameId, socket, io, socket.request.token);
   });
   socket.on('initialTiles', ({ gameId, initialTiles }) => {
-    console.log('joinGame', initialTiles);
     SocketController.joinGame(gameId, socket, io, socket.request.token);
   });
   socket.on('ready', ({ gameId, player }) => {
@@ -61,6 +54,19 @@ io.on('connection', (socket) => {
     console.log('start', socket.rooms);
     SocketController.startGame(socket, gameId, playerId);
   });
+  socket.on(
+    'tilePlayed',
+    ({ gameId, playerId, droppedTile, triggeredTile }) => {
+      console.log('start', socket.rooms);
+      SocketController.tilePlayed(
+        socket,
+        gameId,
+        playerId,
+        droppedTile,
+        triggeredTile
+      );
+    }
+  );
   socket.on('disconnect', () => {
     console.log(socket.id + 'has disconnected');
   });
@@ -72,6 +78,8 @@ io.on('connection', (socket) => {
     console.log(err);
   });
 });
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => console.log(`Listening on port: ${PORT}`));

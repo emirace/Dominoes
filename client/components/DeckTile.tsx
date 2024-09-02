@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import DominoesTile from "./DominoesTile";
 import { useDrag } from "@use-gesture/react";
 import { useSpring, animated, config } from "@react-spring/web";
@@ -12,7 +12,7 @@ function DeckTile({
   tile: tileType;
   onDropComplete: any;
 }) {
-  const { draggedTile, canPlay, setDraggedTile, setRecentlyDroppedTile } =
+  const { draggedTile, canPlay, setDraggedTile, recentlyDroppedTile } =
     useGameContext();
 
   const [springProp, api] = useSpring(() => ({
@@ -24,26 +24,22 @@ function DeckTile({
   const bind = useDrag(({ movement: [x, y], active }) => {
     if (!canPlay) return;
     if (!draggedTile && active) setDraggedTile(tile);
-    else if (!active)
+    else if (!active) {
       setTimeout(() => {
-        setRecentlyDroppedTile((prevDroppedTile) => {
-          if (prevDroppedTile?.id === tile.id) {
-            api.start({
-              opacity: 1,
-              immediate: true,
-            });
-            onDropComplete(tile);
-            return null;
-          } else
-            api.start({
-              transform: `translate(0, 0)`,
-            });
-          return prevDroppedTile;
-        });
+        if (recentlyDroppedTile.current?.id === tile.id) {
+          api.start({
+            opacity: 0,
+            immediate: true,
+          });
+          onDropComplete(tile);
+        } else
+          api.start({
+            transform: `translate(0, 0)`,
+          });
 
         setDraggedTile(null);
       }, 0);
-    else
+    } else
       api.start({
         transform: `translate(${x}px, ${y}px)`,
         immediate: active,
@@ -52,8 +48,8 @@ function DeckTile({
   return (
     <animated.div
       {...bind()}
-      style={springProp}
-      className={`touch-none z-10 relative`}
+      style={{ ...springProp }}
+      className={`touch-none relative`}
     >
       <DominoesTile {...{ tile }} />
     </animated.div>

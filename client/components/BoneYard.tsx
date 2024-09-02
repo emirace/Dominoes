@@ -11,7 +11,6 @@ function BoneYard() {
     firstPlayer,
     isTurn,
     deck,
-    canPlay,
     setCanPlay,
     setBoneYardDistSpec,
     setFirstPlayer,
@@ -70,7 +69,7 @@ function BoneYard() {
         }, 1000 + i * (1000 / boneYardDistSpec.callbacks.length));
       }
     }
-  }, [boneYardDistSpec, deck]);
+  }, [boneYardDistSpec]);
 
   const handleSelectTile = (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,

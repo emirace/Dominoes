@@ -1,6 +1,6 @@
 import mongoose, { Types, Document, Model, SchemaTypes } from 'mongoose';
 import { User } from './User.model';
-import { numberPair } from '../types';
+import { numberPair, TileClassSpec } from '../types';
 
 export interface Game {
   gameId: string;
@@ -11,6 +11,10 @@ export interface Game {
     player1Ready: boolean;
     player2Ready: boolean;
     boneyard: numberPair[];
+    gameboard: {
+      currentTile: TileClassSpec;
+      tileConnectedTo: TileClassSpec;
+    }[];
   };
   turn: 0 | 1;
 }
@@ -56,6 +60,7 @@ const gameSchema = new mongoose.Schema<Game>(
         type: Boolean,
         default: false,
       },
+      gameboard: [{}],
     },
   },
   { timestamps: true }

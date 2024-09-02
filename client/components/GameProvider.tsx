@@ -24,10 +24,8 @@ import { toast } from "react-toastify";
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider = ({ children }: { children: ReactNode }) => {
-  const [draggedTile, setDraggedTile] =
-    useState<GameContextType["draggedTile"]>(null);
-  const [recentlyDroppedTile, setRecentlyDroppedTile] =
-    useState<GameContextType["draggedTile"]>(null);
+  const [draggedTile, setDraggedTile] = useState<tileType | null>(null);
+  const recentlyDroppedTile = useRef<tileType | null>(null);
   const [game, setGame] = useState<Game | null>(null);
   const { slug } = useParams();
   const router = useRouter();
@@ -43,7 +41,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   }, [game, user]);
 
   const [firstPlayer, setFirstPlayer] = useState(-2);
-  const [permits, setPermits] = useState<number[]>([9]);
+  const [permits, setPermits] = useState<number[]>([1, 2, 3, 4, 5, 6]);
   const [distCallback, setDistCallback] = useState<
     ((position: numberPair) => tileType | undefined)[]
   >([]);
@@ -131,13 +129,30 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
           const userDeck = choices.map((i: number) => encryptedBoneyard[i]);
           console.log(userDeck, typeof playerId, typeof isTurn);
           boneYardTile.current = makeTile(userDeck);
+          console.log(boneYardTile.current, "molk");
           setDeck(userDeck);
           setIsTurn(isTurn);
         }
       });
 
+      socket.on(
+        "opponentPlayed",
+        ({ tile, gameboard, isTurn: isCurrentTurn }) => {
+          setIsTurn(isCurrentTurn);
+          console.log(tile, gameboard, isCurrentTurn);
+
+          // Do your magic here
+        }
+      );
+
+      socket.on("tileError", () => {
+        // Not important, but you'd have to undo the tile they just played
+      });
+
       return () => {
         socket.off("boneyard");
+        socket.off("opponentPlayed");
+        socket.off("tileError");
         socket.off("playerReady");
         socket.off("joinGameError");
       };
@@ -170,7 +185,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         draggedTile,
         setDraggedTile,
         recentlyDroppedTile,
-        setRecentlyDroppedTile,
         selectFromBoneYard,
         deck,
         boneYardDistSpec,
@@ -179,6 +193,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         permits,
         setPermits,
         isTurn,
+        setIsTurn,
         registerDistCallback,
         unRegisterDistCallback,
         requestTile,

@@ -15,8 +15,10 @@ export interface Game {
 }
 
 export interface AnchorProp {
+  root: boolean;
   coordinates: numberPair;
   tile: tileType;
+  canAccept: number[];
   tilt: number;
   scale: number;
   initailSetAnchor: (
@@ -35,7 +37,7 @@ export interface DominoesTileProps {
   size?: string;
 }
 export interface DropZoneProp {
-  acceptedDotCount: number[];
+  registerDrop: (count: number) => void;
   position: numberPair | null;
   initailSetAnchor: (
     tile: tileType,
@@ -83,11 +85,11 @@ export type PlayerId = -1 | 0 | 1;
 
 export interface GameContextType {
   draggedTile: tileType | null;
-  setDraggedTile: React.Dispatch<React.SetStateAction<TileType>>;
-  recentlyDroppedTile: tileType | null;
-  setRecentlyDroppedTile: React.Dispatch<React.SetStateAction<tileType | null>>;
+  setDraggedTile: React.Dispatch<React.SetStateAction<tileType | null>>;
+  recentlyDroppedTile: React.MutableRefObject<tileType | null>;
   deck: numberPair[];
   isTurn: boolean;
+  setIsTurn: (value: boolean) => void;
   firstPlayer: number;
   playerId: PlayerId;
   setFirstPlayer: React.Dispatch<React.SetStateAction<number>>;

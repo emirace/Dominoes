@@ -21,7 +21,7 @@ export default async (
       address: verifiedJwt.address,
       username: verifiedJwt.username,
     });
-    console.log(user);
+    // console.log(user);
     if (!user) {
       return ServerError(res, 'You are not authenticated', 401);
     }

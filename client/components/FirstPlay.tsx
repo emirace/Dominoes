@@ -4,7 +4,6 @@ import GameAlert from "@/components/GameAlert";
 
 function FirstPlay() {
   const { playerId, firstPlayer } = useGameContext();
-  console.log({ playerId, firstPlayer });
 
   return (
     <div>

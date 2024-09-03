@@ -14,12 +14,10 @@ import {
   boneYardDistSpecType,
   Game,
   PlayerId,
-  tileAlignSpecType,
 } from "@/types";
 import { useSocket } from "./SocketProvider";
 import { useParams, useRouter } from "next/navigation";
 import useCreateAPI from "@/utils/api";
-import { TileAlignSpec } from "@/utils/game-utils";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { toast } from "react-toastify";
 
@@ -39,11 +37,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const { socket } = useSocket();
   const API = useCreateAPI();
   const { user } = useCurrentUser();
-  // console.log(game, user);
 
   const playerId: PlayerId = useMemo(() => {
     const index = game?.players.findIndex((player) => player._id === user?._id);
-    console.log(index);
     return index !== -1 ? (index as PlayerId) : (null as any);
   }, [game, user]);
 
@@ -111,36 +107,24 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    console.log(isTurn, canPlay);
-  }, [isTurn, canPlay]);
-
-  useEffect(() => {
     if (socket) {
       API.get(`/game/${slug}`)
         .then(({ data }) => {
-          // console.log(data);
           if (!data.data || data.data.players.length === 0) {
             return toast.error("Game not found");
           }
-          console.log("dataaa", data.data);
           setGame(data.data);
         })
         .catch((err) => {
-          console.log(err);
           toast.error("Game not found");
           setTimeout(() => router.push("/"), 2000);
         });
 
       socket.on("boneyard", ({ encryptedBoneyard, choices, isTurn }) => {
         if (!boneYardTile.current.length) {
-          // console.log("gameJoined", encryptedBoneyard);
-          // const decryptedBoneyard = decrypt(encryptedBoneyard);
-          // console.log({ encryptedBoneyard, isTurn, choices, playerId });
           encryptedBoneyard && setBoneyard(encryptedBoneyard);
           const userDeck = choices.map((i: number) => encryptedBoneyard[i]);
-          // console.log(userDeck, typeof playerId, typeof isTurn);
           boneYardTile.current = makeTile(userDeck);
-          // console.log(boneYardTile.current, "molk");
           setDeck(userDeck);
           setIsTurn(isTurn);
         }
@@ -152,7 +136,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         "opponentPlayed",
         ({ tile, gameboard, isTurn: isCurrentTurn }) => {
           setIsTurn(isCurrentTurn);
-          console.log('isCurrentTurn');
 
           const playedTile = { id: tile.id, tile: tile.tile } as tileType;
           const temp = gameboard[gameboard.length - 1].tileConnectedTo;
@@ -170,14 +153,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         }
       );
 
-      socket.on("tileError", () => {
-        // Not important, but you'd have to undo the tile they just played
-      });
-
       return () => {
         socket.off("boneyard");
         socket.off("opponentPlayed");
-        socket.off("tileError");
         socket.off("userPlayed");
         socket.off("playerReady");
         socket.off("joinGameError");
@@ -186,10 +164,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   }, [socket, playerId]);
 
   useEffect(() => {
-    console.log(boneYardTile.current);
     if (!boneYardTile.current.length) return;
 
-    // setTimeout(() => {
     setDistCallback((arr) => {
       const requestSpec = {
         active: true,
@@ -202,7 +178,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
       return arr;
     });
-    // }, 0);
   }, [boneYardTile.current, distCallback]);
 
   return (
@@ -231,7 +206,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         opponentPlay,
         setOpponentPlay,
         oppenentPullFrom,
-      
       }}
     >
       {children}

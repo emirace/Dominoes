@@ -4,7 +4,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import RoomPreviewCard from "../components/RoomPreviewCard";
-import PlayerProfileCard from "../components/PlayerProfileCard";
 import { ArrowLeft, Mail } from "react-feather";
 import { Icons } from "@/components/icons";
 import useCurrentUser from "@/hooks/useCurrentUser";
@@ -12,7 +11,6 @@ import { useSocket } from "@/components/SocketProvider";
 import { toast } from "react-toastify";
 import { Game } from "@/types";
 import createAPI from "@/utils/api";
-import { fail } from "assert";
 
 const truncateAddress = (address?: string) => {
   if (!address) return "";
@@ -55,11 +53,9 @@ export default function Home() {
     if (socket) {
       API.get(`/game/all`)
         .then(({ data }) => {
-          console.log(data);
           setGames(data.data);
         })
         .catch((err) => {
-          console.log(err);
           toast.error("An error occurred");
           setTimeout(() => pathname !== "/auth" && router.push("/auth"), 2000);
         });
@@ -80,15 +76,9 @@ export default function Home() {
         socket.off("createGameError");
       };
     }
-    // socket?.connect();
-    // const token = localStorage.getItem("token");
-    // if (!token) {
-    //   router.push("/auth");
-    // }
   }, [socket]);
 
   const handleClick = () => {
-    console.log("handle", socket);
     socket?.emit("createGame");
   };
 
@@ -121,7 +111,6 @@ export default function Home() {
               onClick={handleDropdownClick}
               ref={dropdownRef}
             >
-              {/* <Image width={40} height={40} src={'place an image url here'} alt={'profile pic'}  className="rounded-full w-10 h-10"/> */}
               {dropdownToggle && (
                 <div className=" absolute right-0 top-12 bg-main-blue rounded-xl w-36  drop-shadow-xl">
                   <ul className="*:h-10 *:  py-3">
@@ -131,7 +120,6 @@ export default function Home() {
                     >
                       logout
                     </li>
-                    {/* add more list item and use stopPropagation on event handlers to prevent the dropdown from closing whenever a list item is clicked*/}
                   </ul>
                 </div>
               )}

@@ -2,7 +2,6 @@ import React, { useRef, useMemo } from "react";
 import { DominoesTileProps } from "@/types";
 
 function calcTilePosition(dots: [number, number]): [number, number] {
-  // console.log("calculatng");
   if (dots[1] > dots[0] || dots.some((dot: number) => dot < 0 || dot > 6)) {
     return [4, 1];
   } else {
@@ -13,7 +12,7 @@ function calcTilePosition(dots: [number, number]): [number, number] {
   }
 }
 
-function DominoesTile({ tile: {tile}, size = "normal"}: DominoesTileProps) {
+function DominoesTile({ tile: { tile }, size = "normal" }: DominoesTileProps) {
   const ref = useRef<HTMLDivElement | null>(null);
   const tilePosition = useMemo(() => calcTilePosition(tile), [tile]);
 
@@ -25,7 +24,7 @@ function DominoesTile({ tile: {tile}, size = "normal"}: DominoesTileProps) {
         backgroundPosition: `-${80 * tilePosition[1]}px -${
           140 * tilePosition[0]
         }px`,
-        transform: size === "small" ? 'scale(0.5) translate(-50%, -50%)' : '',
+        transform: size === "small" ? "scale(0.5) translate(-50%, -50%)" : "",
       }}
     />
   );

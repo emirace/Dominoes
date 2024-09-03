@@ -15,7 +15,6 @@ function GameBoard() {
   const { socket } = useSocket();
   const { playerId, setIsTurn, isTurn } = useGameContext();
   const { slug: gameId } = useParams();
-  const dynamicTileBound = useRef<numberPair>([0, 0]);
   const activeHover = useRef<number | null>(null);
   const droppedTile = useRef<number | null>(null);
   const droppedOn = useRef<number | null>(null);
@@ -31,7 +30,7 @@ function GameBoard() {
       coordinates[1] - bounds.y,
     ];
     const newTile = new TileAlignSpec(tile, tileCoordinate);
-    console.log('gcfcutfut',newTile)
+    console.log("gcfcutfut", newTile);
     setAnchors((prevState) => [...prevState, newTile]);
     droppedTile.current = tile.id;
     droppedOn.current = id;
@@ -66,7 +65,6 @@ function GameBoard() {
         })
       );
       setDefaultDrop(false);
-     
     } else {
       if (droppedTile.current !== -1) {
         const triggeredAnchor = anchors.find(
@@ -85,7 +83,6 @@ function GameBoard() {
             newArr[droppedAnchorIndex] = newDroppedAnchor;
             return newArr;
           });
-
         }
       }
     }

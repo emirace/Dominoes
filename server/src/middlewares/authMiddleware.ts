@@ -21,7 +21,6 @@ export default async (
       address: verifiedJwt.address,
       username: verifiedJwt.username,
     });
-    // console.log(user);
     if (!user) {
       return ServerError(res, 'You are not authenticated', 401);
     }
@@ -29,7 +28,6 @@ export default async (
     (req as ExtendedRequest).user = user;
     next();
   } catch (err) {
-    // console.error(err);
     return next(new Error('You are not authenticated'));
   }
 };

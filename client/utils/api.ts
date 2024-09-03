@@ -24,7 +24,6 @@ const useCreateAPI = () => {
   apiInstance.interceptors.response.use(
     (response) => response,
     (error) => {
-      console.log(pathname);
       if (
         error.response &&
         error.response.status === 401 &&

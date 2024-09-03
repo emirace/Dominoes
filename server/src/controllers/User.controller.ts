@@ -5,29 +5,6 @@ import bcrypt from 'bcryptjs';
 import signJWT from '../utils/signJWT';
 
 const UserController = {
-  // register: asyncHandler(async (req, res) => {
-  //   const { username, email, password } = req.body;
-  //   const user = await User.findOne({ $or: [{ email }, { username }] });
-  //   if (user) {
-  //     return ServerError(res, 'Email or username already registered');
-  //   }
-
-  //   const newUser = await User.create({
-  //     username,
-  //     email,
-  //     password: bcrypt.hashSync(password),
-  //   });
-
-  //   const jwt = signJWT(newUser.toObject());
-
-  //   return SuccessResponse(
-  //     res,
-  //     { data: newUser, token: jwt },
-  //     'Registration successful',
-  //     201
-  //   );
-  // }),
-
   authenticate: asyncHandler(async (req, res) => {
     const { address, username } = req.body;
     let user = await User.findOne({ address });
@@ -53,27 +30,6 @@ const UserController = {
       201
     );
   }),
-
-  // login: asyncHandler(async (req, res) => {
-  //   const { username, email, password } = req.body;
-  //   const user = await User.findOne({ email });
-  //   if (!user) {
-  //     return ServerError(res, 'Invalid credentials', 400);
-  //   }
-  //   const isPasswordMatch = bcrypt.compare(password, user.password);
-  //   if (!isPasswordMatch) {
-  //     return ServerError(res, 'Invalid credentials', 400);
-  //   }
-
-  //   const jwt = signJWT(user.toObject());
-
-  //   return SuccessResponse(
-  //     res,
-  //     { data: user, token: jwt },
-  //     'Registration successful',
-  //     200
-  //   );
-  // }),
 
   getLoggedInUser: asyncHandler(async (req, res) => {
     const user = req.user;

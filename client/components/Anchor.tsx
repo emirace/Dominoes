@@ -23,7 +23,7 @@ function Anchor({
   });
   const [drop, setDrop] = useState(true);
   const [dropCount, setDropCount] = useState(0);
-  const { draggedTile, recentlyDroppedTile, opponentPlay } = useGameContext();
+  const { draggedTile, opponentPlay } = useGameContext();
 
   const registerDrop = (_: number) => {
     const type =
@@ -34,8 +34,6 @@ function Anchor({
         (dropCount + 1 <= 4 && type === "spinner")
     );
   };
-
-  // console.log('canAccept', canAccept)
 
   return (
     <animated.div className="absolute w-fit top " style={{ ...springProp }}>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Image from "next/image";
 import DeckTile from "./DeckTile";
 import {
@@ -14,7 +14,7 @@ import useDistributor, { requestType } from "@/hooks/useDistributor";
 import { tileType } from "@/types";
 
 function PlayerDeck() {
-  const { permits, canPlay, draggedTile } = useGameContext();
+  const { canPlay, draggedTile } = useGameContext();
   const [hand, setHand, from, boundRef, requestTile] = useDistributor(
     requestType.MAIN_DECK
   );
@@ -48,16 +48,6 @@ function PlayerDeck() {
   const onDropComplete = ({ id }: { id: number }) => {
     setHand((prevArr: tileType[]) => prevArr.filter((tile) => tile.id !== id));
   };
-
-  // useEffect(() => {
-  //   const needTile =
-  //     hand.length &&
-  //     !hand.some(({ tile }) => permits.some((item) => tile.includes(item)));
-
-  //   if (needTile) {
-  //     requestTile();
-  //   }
-  // }, [permits]);
 
   return (
     <div

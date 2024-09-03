@@ -63,7 +63,6 @@ input:not(:placeholder-shown) ~ label {
 
 .tile {
   user-select: none;
-  /* position: absolute; */
   pointer-events: none;
   transform-origin: 50% 50%;
   color: #617187;

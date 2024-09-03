@@ -47,13 +47,9 @@ function PlayerProfileCard({
           {dropdownToggle && (
             <div className=" absolute right-0 top-10 bg-main-blue rounded-xl w-28  drop-shadow-2xl  shadow-button-shadow">
               <ul className="*:h-10 *:  py-0">
-                <li
-                  className=" capitalize text-white px-4 py-2 flex items-center hover:bg-white/15 rounded-xl"
-                  // onClick={add a function to handle kick}
-                >
+                <li className=" capitalize text-white px-4 py-2 flex items-center hover:bg-white/15 rounded-xl">
                   kick
                 </li>
-                {/* add more list item and use stopPropagation on event handlers to prevent the dropdown from closing whenever a list item is clicked*/}
               </ul>
             </div>
           )}

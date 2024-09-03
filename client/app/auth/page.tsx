@@ -7,11 +7,8 @@ import { useRouter } from "next/navigation";
 import createAPI from "@/utils/api";
 
 function AuthPage() {
-  const router = useRouter();
   const API = createAPI();
-  const [isSignUp, setIsSignUp] = useState(false);
   const [showUsername, setShowUsername] = useState(false);
-  const [address, setAddress] = useState("");
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -59,7 +56,6 @@ function AuthPage() {
         }
 
         localStorage.setItem("token", response.data.data.token);
-        console.log("JWT Token:", response.data.data.token);
         window.location.href = "/";
       }
     } catch (error: any) {
@@ -85,29 +81,8 @@ function AuthPage() {
       const nonce = `Sign this message to verify wallet ownership: ${Math.random()
         .toString(36)
         .substring(2)}`;
-      // const transaction = await window.tronWeb.transactionBuilder.sendTrx(
-      //   userAddress,
-      //   100,
-      //   nonce
-      // );
       const signedMessage = await window.tronWeb.trx.signMessageV2(nonce);
-      console.log("Signed Transaction:", signedMessage);
       authenticate(userAddress, nonce, signedMessage);
-      //   e.preventDefault();
-      //   setIsLoading(true);
-      //   console.log(data);
-      //   if (isSignUp && data.password !== data.confirmPassword) {
-      //     toast.error("Passwords do not match");
-      //     return;
-      //   }
-      //   const { data: res } = await API.post(
-      //     isSignUp ? "/user/register" : "/user/login",
-      //     data
-      //   );
-
-      //   toast.success("Authenticated successfully");
-      //   localStorage.setItem("token", res.data.token);
-      //   router.push("/");
     } catch (err: any) {
       console.log(err);
       toast.error(
@@ -165,12 +140,6 @@ function AuthPage() {
               </button>
             </div>
           )}
-          {/* <div className="my-6 flex justify-center items-center gap-4">
-            <div className="h-px w-full bg-white/15"></div>
-            <p className="">or</p>
-            <div className="h-px w-full bg-white/15"></div>
-          </div>
-          <button className=""></button> */}
         </div>
       </div>
       <div className="w-1/3 hidden bg-dark-blue md:flex justify-center items-center">

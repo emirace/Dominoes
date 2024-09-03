@@ -14,7 +14,6 @@ import useCurrentUser from "@/hooks/useCurrentUser";
 function RoomPage({ params }: { params: { slug: string } }) {
   const { socket } = useSocket();
   const { slug } = params;
-  const searchParams = useSearchParams();
   const API = createAPI();
   const [game, setGame] = useState<Game | null>(null);
   const { user } = useCurrentUser();
@@ -55,10 +54,6 @@ function RoomPage({ params }: { params: { slug: string } }) {
     }, 1000);
   };
 
-  const handleTextAreaCick = (e: React.MouseEvent<HTMLTextAreaElement>) => {
-    // e.target.select();
-  };
-
   const handleReady = () => {
     console.log("event emmieted", game?.players.length, !isParticipating);
     if (game?.players.length === 1 && !isParticipating) {
@@ -80,16 +75,13 @@ function RoomPage({ params }: { params: { slug: string } }) {
     if (socket) {
       API.get(`/game/${slug}`)
         .then(({ data }) => {
-          // console.log(data);
           if (!data.data || data.data.players.length === 0) {
             return toast.error("Game not found");
           }
-          console.log("dataaa", data.data);
           setGame(data.data);
           setPrivacyToggle(data.data.isPrivate);
         })
         .catch((err) => {
-          console.log(err);
           toast.error("Game not found");
           setTimeout(() => router.push("/"), 2000);
         });
@@ -141,7 +133,6 @@ function RoomPage({ params }: { params: { slug: string } }) {
         !(dropdownRef.current as HTMLDivElement).contains(e.target as Node)
       ) {
         setDropdownToggle(false);
-        console.log(e.target);
       }
     };
 
@@ -167,16 +158,6 @@ function RoomPage({ params }: { params: { slug: string } }) {
       </div>
     );
   }
-  console.log(
-    user?._id,
-    playerId,
-    isParticipating,
-    game.players.length,
-    game.players.length !== 1 && isParticipating,
-    isParticipating && game.players.length < 2,
-    playerId === 0 && player1Ready,
-    playerId === 1 && player2Ready
-  );
 
   return (
     <div className="text-white">
@@ -225,7 +206,6 @@ function RoomPage({ params }: { params: { slug: string } }) {
                   >
                     logout
                   </li>
-                  {/* add more list item and use stopPropagation on event handlers to prevent the dropdown from closing whenever a list item is clicked*/}
                 </ul>
               </div>
             )}
@@ -252,7 +232,6 @@ function RoomPage({ params }: { params: { slug: string } }) {
         <div className="pt-11 flex gap-3 items-center">
           <button
             disabled={
-              // (game.players.length !== 1 && isParticipating) ||
               (isParticipating && game.players.length < 2) ||
               (playerId === 0 && player1Ready) ||
               (playerId === 1 && player2Ready)
@@ -322,7 +301,6 @@ function RoomPage({ params }: { params: { slug: string } }) {
               <textarea
                 name="inviteUrl"
                 className="bg-transparent outline-none resize-none overflow-hidden w-full h-5 peer"
-                onClick={handleTextAreaCick}
                 readOnly
               >
                 {`http://localhost:3000/room/${params.slug}?join=true`}

@@ -6,23 +6,17 @@ import {
   animated,
   config,
   useChain,
-  useSpring,
   useSpringRef,
   useTransition,
 } from "@react-spring/web";
 import DominoesTile from "./DominoesTile";
-import { numberPair } from "@/types";
+import { numberPair, tileType } from "@/types";
 
 function OpponentDeck() {
   const { oppenentPullFrom, opponentPlay } = useGameContext();
   const [hand, setHand, from, boundRef] = useDistributor();
 
   const springRef = useSpringRef();
-  const springProp = useSpring({
-    ref: springRef,
-    width: hand.length * 64 - 4,
-    config: config.stiff,
-  });
 
   const transRef = useSpringRef();
   const transitions = useTransition(hand, {
@@ -47,7 +41,7 @@ function OpponentDeck() {
         const children = parent.children;
         const lastChild = children[children.length - 1];
 
-        setHand((prevArr) => {
+        setHand((prevArr: tileType[]) => {
           const newArr = [...prevArr];
           newArr.pop();
           return newArr;
@@ -62,7 +56,6 @@ function OpponentDeck() {
 
     const lastTilecoor = selectLastTile();
     if (lastTilecoor) oppenentPullFrom.current = lastTilecoor;
-    console.log("opponent played a new tile", lastTilecoor);
   }, [boundRef, oppenentPullFrom, opponentPlay, setHand]);
 
   return (

@@ -32,9 +32,6 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
       return;
     }
     const token = window.localStorage.getItem("token");
-    if (!token) {
-      // return router.push("/auth");
-    }
     if (socket) {
       return;
     }
@@ -53,8 +50,7 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 
     newSocket.on("connect_error", (err) => {
       if (window.location.pathname !== "/auth") {
-        console.log(err.message, window.location.href);
-        // router.push("/auth");
+        router.push("/auth");
       }
     });
 

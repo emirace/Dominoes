@@ -47,17 +47,14 @@ io.on('connection', (socket) => {
     SocketController.joinGame(gameId, socket, io, socket.request.token);
   });
   socket.on('ready', ({ gameId, player }) => {
-    console.log('ready', socket.rooms);
     SocketController.handleReady(gameId, socket, io, player);
   });
   socket.on('startGame', ({ gameId, playerId }) => {
-    console.log('start', socket.rooms, socket.id);
     SocketController.startGame(socket, gameId, playerId);
   });
   socket.on(
     'tilePlayed',
     ({ gameId, playerId, droppedTile, triggeredTile }) => {
-      console.log('start', socket.rooms);
       SocketController.tilePlayed(
         socket,
         gameId,

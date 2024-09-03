@@ -1,4 +1,4 @@
-import { numberPair } from "@/types";
+import { numberPair, tileType } from "@/types";
 
 export function calcVectorAngle(vec1: numberPair, vec2: numberPair) {
   try {
@@ -106,7 +106,7 @@ export class TileAlignSpec {
       return this._connectionSpec.includes(1) ? [this.tile[0]] : [];
     }
 
-    return this._connectionSpec.reduce((acc, element, i) => {
+    return this._connectionSpec.reduce((acc: any[], element, i) => {
       if (element) acc.push(this.tile[i]);
       return acc;
     }, []);

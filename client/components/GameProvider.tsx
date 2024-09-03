@@ -152,7 +152,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         "opponentPlayed",
         ({ tile, gameboard, isTurn: isCurrentTurn }) => {
           setIsTurn(isCurrentTurn);
-          console.log(isCurrentTurn);
+          console.log('isCurrentTurn');
 
           const playedTile = { id: tile.id, tile: tile.tile } as tileType;
           const temp = gameboard[gameboard.length - 1].tileConnectedTo;
@@ -160,7 +160,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
             id: temp?.id,
             tile: temp?.tile,
           } as tileType;
-          console.log("e go run?");
 
           setOpponentPlay({
             tilePlayed: playedTile,
@@ -230,7 +229,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         canPlay: canPlay && isTurn,
         setCanPlay,
         opponentPlay,
+        setOpponentPlay,
         oppenentPullFrom,
+      
       }}
     >
       {children}

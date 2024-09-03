@@ -31,6 +31,7 @@ function GameBoard() {
       coordinates[1] - bounds.y,
     ];
     const newTile = new TileAlignSpec(tile, tileCoordinate);
+    console.log('gcfcutfut',newTile)
     setAnchors((prevState) => [...prevState, newTile]);
     droppedTile.current = tile.id;
     droppedOn.current = id;
@@ -65,15 +66,7 @@ function GameBoard() {
         })
       );
       setDefaultDrop(false);
-      // const triggeredAnchor = anchors.find(
-      //   (anchor) => anchor.id === droppedOn.current
-      // );
-
-      // const droppedAnchor = anchors.find(
-      //   (anchor) => anchor.id === droppedTile.current
-      // );
-
-      // setIsTurn(false);
+     
     } else {
       if (droppedTile.current !== -1) {
         const triggeredAnchor = anchors.find(
@@ -93,15 +86,6 @@ function GameBoard() {
             return newArr;
           });
 
-          // if (!isTurn) {
-          //   socket?.emit("tilePlayed", {
-          //     gameId,
-          //     playerId,
-          //     droppedTile: droppedAnchor,
-          //     triggeredTile: triggeredAnchor,
-          //   });
-          // }
-          // setIsTurn(false);
         }
       }
     }

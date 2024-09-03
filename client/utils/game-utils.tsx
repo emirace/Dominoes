@@ -102,7 +102,14 @@ export class TileAlignSpec {
   }
 
   get canAccept() {
-    return this.tile.filter((element) => !this._connectedAt.includes(element));
+    if (this.isDouble) {
+      return this._connectionSpec.includes(1) ? [this.tile[0]] : [];
+    }
+
+    return this._connectionSpec.reduce((acc, element, i) => {
+      if (element) acc.push(this.tile[i]);
+      return acc;
+    }, []);
   }
 
   set tilt(value: 0 | 90 | -90 | 180) {
@@ -307,4 +314,3 @@ export class TileAlignSpec {
     console.info(`Anchor ${this.id} set in at ${this.coordinates}`);
   }
 }
-

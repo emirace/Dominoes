@@ -121,6 +121,12 @@ export interface GameContextType {
     tilePlayed: tileType;
     playedOn: tileType | null;
   } | null;
+  setOpponentPlay: React.Dispatch<
+    React.SetStateAction<{
+      tilePlayed: tileType;
+      playedOn: tileType | null;
+    } | null>
+  >;
   oppenentPullFrom: React.MutableRefObject<numberPair>;
 }
 

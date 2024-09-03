@@ -23,7 +23,7 @@ function Anchor({
   });
   const [drop, setDrop] = useState(true);
   const [dropCount, setDropCount] = useState(0);
-  const { draggedTile, recentlyDroppedTile } = useGameContext();
+  const { draggedTile, recentlyDroppedTile, opponentPlay } = useGameContext();
 
   const registerDrop = (_: number) => {
     const type =
@@ -35,13 +35,16 @@ function Anchor({
     );
   };
 
+  // console.log('canAccept', canAccept)
+
   return (
     <animated.div className="absolute w-fit top " style={{ ...springProp }}>
       <DominoesTile tile={tile} />
       <div className="  absolute  top-1/2 left-1/2">
         {drop &&
-          draggedTile &&
-          canAccept.some((i) => draggedTile?.tile.includes(i)) && (
+          canAccept.some((i) =>
+            (draggedTile || opponentPlay?.tilePlayed)?.tile.includes(i)
+          ) && (
             <DropZone
               position={null}
               id={tile.id}

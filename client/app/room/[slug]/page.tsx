@@ -29,6 +29,9 @@ function RoomPage({ params }: { params: { slug: string } }) {
     () => game?.players.findIndex((player) => player._id === user?._id) ?? -1,
     [game?.players]
   );
+  const isParticipating = game?.players.some(
+    (player) => player._id === user?._id
+  );
 
   const startCountdown = () => {
     if (!socket) {
@@ -57,7 +60,10 @@ function RoomPage({ params }: { params: { slug: string } }) {
   };
 
   const handleReady = () => {
-    if (game?.players.length === 2) {
+    console.log("event emmieted", game?.players.length, !isParticipating);
+    if (game?.players.length === 1 && !isParticipating) {
+      socket?.emit("joinGame", { gameId: slug });
+    } else if (game?.players.length === 2) {
       socket?.emit("ready", {
         gameId: slug,
         player: playerId,
@@ -72,11 +78,6 @@ function RoomPage({ params }: { params: { slug: string } }) {
 
   useEffect(() => {
     if (socket) {
-      const isJoining = searchParams.get("join");
-      if (isJoining) {
-        console.log("event emmieted");
-        socket.emit("joinGame", { gameId: slug });
-      }
       API.get(`/game/${slug}`)
         .then(({ data }) => {
           // console.log(data);
@@ -105,7 +106,7 @@ function RoomPage({ params }: { params: { slug: string } }) {
           : null;
       });
       socket.on("joinGameError", () => {
-        toast.error("Game not found");
+        toast.error("Game not found or game is already filled");
         setTimeout(() => router.push("/"), 2000);
       });
 
@@ -166,6 +167,16 @@ function RoomPage({ params }: { params: { slug: string } }) {
       </div>
     );
   }
+  console.log(
+    user?._id,
+    playerId,
+    isParticipating,
+    game.players.length,
+    game.players.length !== 1 && isParticipating,
+    isParticipating && game.players.length < 2,
+    playerId === 0 && player1Ready,
+    playerId === 1 && player2Ready
+  );
 
   return (
     <div className="text-white">
@@ -241,14 +252,16 @@ function RoomPage({ params }: { params: { slug: string } }) {
         <div className="pt-11 flex gap-3 items-center">
           <button
             disabled={
-              game.players.length < 2 ||
+              // (game.players.length !== 1 && isParticipating) ||
+              (isParticipating && game.players.length < 2) ||
               (playerId === 0 && player1Ready) ||
               (playerId === 1 && player2Ready)
             }
             onClick={handleReady}
             className="bg-main-orange disabled:bg-[#424C5C] disabled:shadow-none disabled:pointer-events-none disabled:opacity-40 rounded-2xl py-2 px-6 w-fit h-auto flex gap-3 text-nowrap items-center"
           >
-            Set Ready{"    "}
+            {isParticipating ? "Set Ready" : "Join Game"}
+            {"    "}
             <span>
               <svg
                 className="fill-white h-6"

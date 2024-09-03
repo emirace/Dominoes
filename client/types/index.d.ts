@@ -2,7 +2,7 @@ import { numberPair } from "./index.d";
 import { RectReadOnly } from "react-use-measure";
 
 export interface User {
-  _id: number;
+  _id: string;
   username: string;
   address: string;
   games: Game[];
@@ -42,7 +42,8 @@ export interface DropZoneProp {
   initailSetAnchor: (
     tile: tileType,
     coordinates: numberPair,
-    id: number
+    id: number,
+    isOpponent?: boolean
   ) => void;
   activeHover: React.MutableRefObject<number | null>;
   id: number;

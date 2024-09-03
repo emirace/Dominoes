@@ -8,14 +8,12 @@ import { useGameContext } from "./GameProvider";
 import { useParams } from "next/navigation";
 import { TileAlignSpec } from "@/utils/game-utils";
 
-
-
 function GameBoard() {
   const [anchors, setAnchors] = useState<TileAlignSpec[]>([]);
   const [defaultDrop, setDefaultDrop] = useState<boolean>(true);
   const [playBoardRef, bounds] = useMeasure();
   const { socket } = useSocket();
-  const { playerId, setIsTurn } = useGameContext();
+  const { playerId, setIsTurn, isTurn } = useGameContext();
   const { slug: gameId } = useParams();
   const dynamicTileBound = useRef<numberPair>([0, 0]);
   const activeHover = useRef<number | null>(null);
@@ -25,7 +23,8 @@ function GameBoard() {
   const initailSetAnchor = (
     tile: tileType,
     coordinates: numberPair,
-    id: number
+    id: number,
+    isOpponent = false
   ) => {
     const tileCoordinate: numberPair = [
       coordinates[0] - bounds.x,
@@ -35,6 +34,19 @@ function GameBoard() {
     setAnchors((prevState) => [...prevState, newTile]);
     droppedTile.current = tile.id;
     droppedOn.current = id;
+
+    if (!isOpponent) {
+      const triggeredAnchor = anchors.find(
+        (anchor) => anchor.id === droppedOn.current
+      );
+
+      socket?.emit("tilePlayed", {
+        gameId,
+        playerId,
+        droppedTile: newTile,
+        triggeredTile: triggeredAnchor,
+      });
+    }
   };
 
   useEffect(() => {
@@ -52,21 +64,16 @@ function GameBoard() {
           return root;
         })
       );
-      const triggeredAnchor = anchors.find(
-        (anchor) => anchor.id === droppedOn.current
-      );
+      setDefaultDrop(false);
+      // const triggeredAnchor = anchors.find(
+      //   (anchor) => anchor.id === droppedOn.current
+      // );
 
-      const droppedAnchor = anchors.find(
-        (anchor) => anchor.id === droppedTile.current
-      );
+      // const droppedAnchor = anchors.find(
+      //   (anchor) => anchor.id === droppedTile.current
+      // );
 
-      socket?.emit("tilePlayed", {
-        gameId,
-        playerId,
-        droppedTile: droppedAnchor,
-        triggeredTile: triggeredAnchor,
-      });
-      setIsTurn(false);
+      // setIsTurn(false);
     } else {
       if (droppedTile.current !== -1) {
         const triggeredAnchor = anchors.find(
@@ -86,13 +93,15 @@ function GameBoard() {
             return newArr;
           });
 
-          socket?.emit("tilePlayed", {
-            gameId,
-            playerId,
-            droppedTile: droppedAnchor,
-            triggeredTile: triggeredAnchor,
-          });
-          setIsTurn(false);
+          // if (!isTurn) {
+          //   socket?.emit("tilePlayed", {
+          //     gameId,
+          //     playerId,
+          //     droppedTile: droppedAnchor,
+          //     triggeredTile: triggeredAnchor,
+          //   });
+          // }
+          // setIsTurn(false);
         }
       }
     }

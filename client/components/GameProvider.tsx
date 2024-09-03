@@ -111,6 +111,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    console.log(isTurn, canPlay);
+  }, [isTurn, canPlay]);
+
+  useEffect(() => {
     if (socket) {
       API.get(`/game/${slug}`)
         .then(({ data }) => {
@@ -142,10 +146,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         }
       });
 
+      socket.on("userPlayed", () => setIsTurn(false));
+
       socket.on(
         "opponentPlayed",
         ({ tile, gameboard, isTurn: isCurrentTurn }) => {
           setIsTurn(isCurrentTurn);
+          console.log(isCurrentTurn);
 
           const playedTile = { id: tile.id, tile: tile.tile } as tileType;
           const temp = gameboard[gameboard.length - 1].tileConnectedTo;
@@ -153,6 +160,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
             id: temp?.id,
             tile: temp?.tile,
           } as tileType;
+          console.log("e go run?");
 
           setOpponentPlay({
             tilePlayed: playedTile,
@@ -171,6 +179,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         socket.off("boneyard");
         socket.off("opponentPlayed");
         socket.off("tileError");
+        socket.off("userPlayed");
         socket.off("playerReady");
         socket.off("joinGameError");
       };

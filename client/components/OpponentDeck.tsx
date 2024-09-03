@@ -14,7 +14,7 @@ import DominoesTile from "./DominoesTile";
 import { numberPair } from "@/types";
 
 function OpponentDeck() {
-  const {oppenentPullFrom, opponentPlay} = useGameContext();
+  const { oppenentPullFrom, opponentPlay } = useGameContext();
   const [hand, setHand, from, boundRef] = useDistributor();
 
   const springRef = useSpringRef();
@@ -60,11 +60,9 @@ function OpponentDeck() {
       }
     };
 
-    if (opponentPlay) {
-      const lastTilecoor = selectLastTile();
-      if (lastTilecoor) oppenentPullFrom.current = lastTilecoor;
-      console.log("opponent played a new tile", lastTilecoor);
-    }
+    const lastTilecoor = selectLastTile();
+    if (lastTilecoor) oppenentPullFrom.current = lastTilecoor;
+    console.log("opponent played a new tile", lastTilecoor);
   }, [boundRef, oppenentPullFrom, opponentPlay, setHand]);
 
   return (

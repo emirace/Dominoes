@@ -18,6 +18,7 @@ function GamePage() {
         id="game"
         className='bg-dark-blue bg-[url("/game-bg.png")] relative bg-cover justify-center bg-center flex items-end min-w-screen min-h-screen overflow-hidden z-0'
       >
+        <OpponentDeck />
         <div className="bg-main-blue  relative border-[9px] rounded-2xl border-black-15 w-full min-h-[calc(100vh_-_24px)] h-full max-w-[700px]">
           <div className="bg-main-blue rounded-9 w-full h-full"></div>
 
@@ -45,7 +46,6 @@ function GamePage() {
           <BoneYard />
           <FirstPlay />
         </div>
-        <OpponentDeck />
       </div>
     </GameProvider>
   );

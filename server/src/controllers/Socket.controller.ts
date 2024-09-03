@@ -27,6 +27,12 @@ const SocketController = {
       }
 
       // console.log(socket.rooms, '1000');
+      for (const room of socket.rooms) {
+        if (room !== socket.id) {
+          socket.leave(room);
+        }
+      }
+
       await socket.join(gameId);
       // console.log(socket.rooms, '20001');
       socket.emit('gameCreated', { gameId });
@@ -137,6 +143,8 @@ const SocketController = {
         tile === droppedTile.tile ? [-1, -1] : tile
       );
 
+      socket.emit('userPlayed');
+
       // Broadcast to the other player
       socket.broadcast.emit('opponentPlayed', {
         tile: droppedTile,
@@ -210,6 +218,12 @@ const SocketController = {
       }
 
       const game = res.data.data;
+      for (const room of socket.rooms) {
+        if (room !== socket.id) {
+          socket.leave(room);
+        }
+      }
+
       // console.log(socket.rooms, '1111');
       await socket.join(gameId);
       // console.log(socket.rooms, '2221');

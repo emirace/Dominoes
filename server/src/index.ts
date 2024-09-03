@@ -51,7 +51,7 @@ io.on('connection', (socket) => {
     SocketController.handleReady(gameId, socket, io, player);
   });
   socket.on('startGame', ({ gameId, playerId }) => {
-    console.log('start', socket.rooms);
+    console.log('start', socket.rooms, socket.id);
     SocketController.startGame(socket, gameId, playerId);
   });
   socket.on(

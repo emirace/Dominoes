@@ -14,10 +14,12 @@ import {
   boneYardDistSpecType,
   Game,
   PlayerId,
+  tileAlignSpecType,
 } from "@/types";
 import { useSocket } from "./SocketProvider";
 import { useParams, useRouter } from "next/navigation";
 import useCreateAPI from "@/utils/api";
+import { TileAlignSpec } from "@/utils/game-utils";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { toast } from "react-toastify";
 
@@ -27,6 +29,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [draggedTile, setDraggedTile] = useState<tileType | null>(null);
   const recentlyDroppedTile = useRef<tileType | null>(null);
   const [game, setGame] = useState<Game | null>(null);
+  const [opponentPlay, setOpponentPlay] = useState<{
+    tilePlayed: tileType;
+    playedOn: tileType | null;
+  } | null>(null);
+  const oppenentPullFrom = useRef<numberPair>([0, 0]);
   const { slug } = useParams();
   const router = useRouter();
   const { socket } = useSocket();
@@ -122,14 +129,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
       socket.on("boneyard", ({ encryptedBoneyard, choices, isTurn }) => {
         if (!boneYardTile.current.length) {
-          console.log("gameJoined", encryptedBoneyard);
+          // console.log("gameJoined", encryptedBoneyard);
           // const decryptedBoneyard = decrypt(encryptedBoneyard);
-          console.log({ encryptedBoneyard, isTurn, choices, playerId });
+          // console.log({ encryptedBoneyard, isTurn, choices, playerId });
           encryptedBoneyard && setBoneyard(encryptedBoneyard);
           const userDeck = choices.map((i: number) => encryptedBoneyard[i]);
-          console.log(userDeck, typeof playerId, typeof isTurn);
+          // console.log(userDeck, typeof playerId, typeof isTurn);
           boneYardTile.current = makeTile(userDeck);
-          console.log(boneYardTile.current, "molk");
+          // console.log(boneYardTile.current, "molk");
           setDeck(userDeck);
           setIsTurn(isTurn);
         }
@@ -139,9 +146,20 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         "opponentPlayed",
         ({ tile, gameboard, isTurn: isCurrentTurn }) => {
           setIsTurn(isCurrentTurn);
-          console.log(tile, gameboard, isCurrentTurn);
 
-          // Do your magic here
+          const playedTile = { id: tile.id, tile: tile.tile } as tileType;
+          const temp = gameboard[gameboard.length - 1].tileConnectedTo;
+          const playedTileConnectedTo = {
+            id: temp?.id,
+            tile: temp?.tile,
+          } as tileType;
+
+          setOpponentPlay({
+            tilePlayed: playedTile,
+            playedOn: playedTileConnectedTo.id
+              ? playedTileConnectedTo
+              : { id: 0, tile: [0, 0] },
+          });
         }
       );
 
@@ -202,6 +220,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setFirstPlayer,
         canPlay: canPlay && isTurn,
         setCanPlay,
+        opponentPlay,
+        oppenentPullFrom,
       }}
     >
       {children}

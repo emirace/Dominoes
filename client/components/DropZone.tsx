@@ -11,7 +11,7 @@ function DropZone({
   scale,
   registerDrop,
 }: DropZoneProp) {
-  const { draggedTile, recentlyDroppedTile } = useGameContext();
+  const { draggedTile, recentlyDroppedTile, opponentPlay, oppenentPullFrom } = useGameContext();
 
 
   const bind = useHover(({ xy: [x, y], hovering }) => {
@@ -29,6 +29,13 @@ function DropZone({
       activeHover.current =
         activeHover.current === id ? null : activeHover.current;
   });
+
+  useEffect(() => {
+    if (opponentPlay?.playedOn?.id === id) {
+      console.log('in dropzone', opponentPlay)
+      initailSetAnchor(opponentPlay.tilePlayed, oppenentPullFrom.current, id)
+    }
+  }, [opponentPlay])
 
   return (
     <div

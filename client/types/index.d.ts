@@ -116,6 +116,11 @@ export interface GameContextType {
     required?: number[],
     amount?: number
   ) => void;
+  opponentPlay: {
+    tilePlayed: tileType;
+    playedOn: tileType | null;
+  } | null;
+  oppenentPullFrom: React.MutableRefObject<numberPair>;
 }
 
 export interface AlertProps {

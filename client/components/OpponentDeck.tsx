@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import { useGameContext } from "./GameProvider";
 import useDistributor from "@/hooks/useDistributor";
@@ -11,10 +11,11 @@ import {
   useTransition,
 } from "@react-spring/web";
 import DominoesTile from "./DominoesTile";
+import { numberPair } from "@/types";
 
 function OpponentDeck() {
-  const {} = useGameContext();
-  const [hand, _, from, boundRef] = useDistributor();
+  const {oppenentPullFrom, opponentPlay} = useGameContext();
+  const [hand, setHand, from, boundRef] = useDistributor();
 
   const springRef = useSpringRef();
   const springProp = useSpring({
@@ -39,6 +40,33 @@ function OpponentDeck() {
 
   useChain([springRef, transRef], [0, 0]);
 
+  useEffect(() => {
+    const selectLastTile = () => {
+      const parent = boundRef.current;
+      if (parent) {
+        const children = parent.children;
+        const lastChild = children[children.length - 1];
+
+        setHand((prevArr) => {
+          const newArr = [...prevArr];
+          newArr.pop();
+          return newArr;
+        });
+
+        if (lastChild) {
+          const rect = lastChild.getBoundingClientRect();
+          return [rect.x, rect.y] as numberPair;
+        }
+      }
+    };
+
+    if (opponentPlay) {
+      const lastTilecoor = selectLastTile();
+      if (lastTilecoor) oppenentPullFrom.current = lastTilecoor;
+      console.log("opponent played a new tile", lastTilecoor);
+    }
+  }, [boundRef, oppenentPullFrom, opponentPlay, setHand]);
+
   return (
     <div
       id="other-player"
@@ -55,11 +83,11 @@ function OpponentDeck() {
       </div>
       <div
         ref={boundRef}
-        className="relative flex-1 flex justify-cente self-start items-center w-full h-[60px]"
+        className="relative flex-1 flex self-start items-center w-full h-[60px]"
       >
         {transitions((style) => (
           <div className="relative h-full w-6 overflow-x-visible">
-            <animated.div style={style} className='h-full drop-shadow-2xl'>
+            <animated.div style={style} className="h-full drop-shadow-2xl">
               {" "}
               <DominoesTile
                 tile={{

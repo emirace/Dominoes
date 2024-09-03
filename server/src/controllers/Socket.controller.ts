@@ -42,7 +42,7 @@ const SocketController = {
       console.log('called');
       const game = await GameModel.findOne({ gameId });
       let boneyard = generateBoneyard();
-      const encryptedBoneyard = encrypt(JSON.stringify(boneyard));
+      // const encryptedBoneyard = encrypt(JSON.stringify(boneyard));
       const player1Choices: number[] = [];
       const player2Choices: number[] = [];
       while (player1Choices.length < 7 || player2Choices.length < 7) {
@@ -116,16 +116,16 @@ const SocketController = {
       console.log('called', droppedTile);
       const game = await GameModel.findOne({ gameId });
       if (!game) {
-        return socket.emit('tileError');
+        return; // socket.emit('tileError', 'Game not found');
       }
 
       const gameboard = game.gameData.gameboard;
-      if (
-        game?.turn !== playerId ||
-        gameboard.some((i) => i.currentTile.id === droppedTile.id)
-      ) {
-        return socket.emit('tileError');
-      }
+      // if (
+      //   game?.turn !== playerId ||
+      //   gameboard.some((i) => i.currentTile.id === droppedTile.id)
+      // ) {
+      //   return socket.emit('tileError', 'Not your turn');
+      // }
 
       gameboard.push({
         currentTile: droppedTile,

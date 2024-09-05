@@ -91,6 +91,8 @@ function GameBoard() {
   const registerDrop = (count: number) => {
     if (count !== 0) setDefaultDrop(false);
   };
+
+  console.log(anchors);
   return (
     <div
       id="play-board"

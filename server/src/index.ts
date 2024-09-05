@@ -18,7 +18,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(
   cors({
-    origin: ['https://dominoes-six.vercel.app', 'http://localhost:3000'],
+    origin: [
+      'https://dominoes-six.vercel.app',
+      'http://localhost:3000',
+      'http://172.20.10.6:3000',
+    ],
   })
 );
 config();
@@ -30,7 +34,11 @@ app.use('/api/game', GameRoutes);
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: ['https://dominoes-six.vercel.app', 'http://localhost:3000'],
+    origin: [
+      'https://dominoes-six.vercel.app',
+      'http://localhost:3000',
+      'http://172.20.10.6:3000',
+    ],
   },
 });
 

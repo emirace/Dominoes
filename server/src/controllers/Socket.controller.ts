@@ -155,6 +155,7 @@ const SocketController = {
   ) => {
     try {
       const game = await GameModel.findOne({ gameId });
+      console.log(game);
       const isOtherPlayerReady =
         playerId === 0
           ? game?.gameData.player2Ready
@@ -162,6 +163,8 @@ const SocketController = {
           ? game?.gameData.player2Ready
           : undefined;
       playerId > -1 && io.to(gameId).emit('playerReady', playerId);
+
+      console.log(isOtherPlayerReady);
 
       if (isOtherPlayerReady) {
         SocketController.startGame(socket, gameId, playerId);

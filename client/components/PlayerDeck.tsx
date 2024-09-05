@@ -18,7 +18,7 @@ function PlayerDeck() {
   const [hand, setHand, from, boundRef, requestTile] = useDistributor(
     requestType.MAIN_DECK
   );
-  const canPlayStyles = canPlay ? "" : "opacity-80 pointer-events-none";
+  const canPlayStyles = canPlay ? "" : "opacity-80 pointer-events-none ";
 
   const springRef = useSpringRef();
   const springProp = useSpring({

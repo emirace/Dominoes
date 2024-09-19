@@ -22,6 +22,7 @@ app.use(
       'https://dominoes-six.vercel.app',
       'http://localhost:3000',
       'http://172.20.10.2:3000',
+      'https://dominoes-vddr.onrender.com',
     ],
   })
 );
@@ -38,6 +39,7 @@ const io = new Server(httpServer, {
       'https://dominoes-six.vercel.app',
       'http://localhost:3000',
       'http://172.20.10.2:3000',
+      'https://dominoes-vddr.onrender.com',
     ],
   },
 });

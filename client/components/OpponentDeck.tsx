@@ -11,11 +11,12 @@ import {
 } from "@react-spring/web";
 import DominoesTile from "./DominoesTile";
 import { numberPair, tileType } from "@/types";
+import { useSocket } from "./SocketProvider";
 
 function OpponentDeck() {
   const { oppenentPullFrom, opponentPlay } = useGameContext();
-  const [hand, setHand, from, boundRef] = useDistributor();
-
+  const [hand, setHand, from, boundRef, tileRequestApi] = useDistributor();
+  const { socket } = useSocket();
   const springRef = useSpringRef();
 
   const transRef = useSpringRef();
@@ -57,6 +58,18 @@ function OpponentDeck() {
     const lastTilecoor = selectLastTile();
     if (lastTilecoor) oppenentPullFrom.current = lastTilecoor;
   }, [boundRef, oppenentPullFrom, opponentPlay, setHand]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("opponentPickFromBoneyard", () => {
+        tileRequestApi(1);
+      });
+
+      return () => {
+        socket.off("opponentPickFromBoneyard");
+      };
+    }
+  }, [socket]);
 
   return (
     <div

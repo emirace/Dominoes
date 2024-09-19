@@ -21,7 +21,7 @@ app.use(
     origin: [
       'https://dominoes-six.vercel.app',
       'http://localhost:3000',
-      'http://172.20.10.6:3000',
+      'http://172.20.10.2:3000',
     ],
   })
 );
@@ -37,7 +37,7 @@ const io = new Server(httpServer, {
     origin: [
       'https://dominoes-six.vercel.app',
       'http://localhost:3000',
-      'http://172.20.10.6:3000',
+      'http://172.20.10.2:3000',
     ],
   },
 });
@@ -60,6 +60,9 @@ io.on('connection', (socket) => {
   socket.on('startGame', ({ gameId, playerId }) => {
     SocketController.startGame(socket, gameId, playerId);
   });
+  socket.on('pickFromBoneyard', () => {
+    SocketController.pickFromBoneyard(socket);
+  });
   socket.on(
     'tilePlayed',
     ({ gameId, playerId, droppedTile, triggeredTile }) => {
@@ -73,7 +76,7 @@ io.on('connection', (socket) => {
     }
   );
   socket.on('disconnect', () => {
-    console.log(socket.id + 'has disconnected');
+    console.log(`${socket.id} has disconnected`);
   });
   socket.on('leave', (room) => {
     console.log('leave', room);

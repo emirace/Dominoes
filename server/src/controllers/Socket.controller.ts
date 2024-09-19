@@ -8,6 +8,8 @@ import {
 import GameModel from '../models/Game.model';
 import { TileClassSpec } from '../types';
 
+const currentGames: string[] = [];
+
 const SocketController = {
   createGame: async (socket: Socket, io: Server, token?: string) => {
     try {
@@ -40,9 +42,15 @@ const SocketController = {
   },
 
   startGame: async (socket: Socket, gameId: string, playerId: number) => {
+    console.log('id', playerId);
     try {
+      if (currentGames.includes(gameId)) {
+        return true;
+      }
+      currentGames.push(gameId);
       const game = await GameModel.findOne({ gameId });
-      let boneyard = generateBoneyard();
+
+      const boneyard = generateBoneyard();
       const player1Choices: number[] = [];
       const player2Choices: number[] = [];
       while (player1Choices.length < 7 || player2Choices.length < 7) {
@@ -63,7 +71,7 @@ const SocketController = {
       }
       const max1 = findLargestDouble(player1Choices.map((i) => boneyard[i]));
       const max2 = findLargestDouble(player2Choices.map((i) => boneyard[i]));
-      let turn =
+      const turn =
         max1 < 0 && max2 < 0 ? -1 : max1 > max2 ? 0 : max2 > max1 ? 1 : -1;
 
       setTimeout(() => {
@@ -76,6 +84,7 @@ const SocketController = {
               ? player2Choices
               : null,
           isTurn: turn === playerId, // Check if it's the current player's turn
+          text: 'emit',
         });
 
         socket.broadcast.emit('boneyard', {
@@ -87,6 +96,7 @@ const SocketController = {
               ? player1Choices
               : null,
           isTurn: turn !== playerId && turn !== -1, // It's the other player's turn if turn !== -1
+          text: 'broadcast',
         });
       }, 500);
 
@@ -115,6 +125,7 @@ const SocketController = {
       }
 
       const gameboard = game.gameData.gameboard;
+      console.log(game.turn, playerId);
       if (
         game?.turn !== playerId ||
         gameboard.some((i) => i.currentTile.id === droppedTile.id)
@@ -155,7 +166,6 @@ const SocketController = {
   ) => {
     try {
       const game = await GameModel.findOne({ gameId });
-      console.log(game);
       const isOtherPlayerReady =
         playerId === 0
           ? game?.gameData.player2Ready
@@ -170,6 +180,15 @@ const SocketController = {
         SocketController.startGame(socket, gameId, playerId);
       }
 
+      return true;
+    } catch (err: any) {
+      throw new Error(err.message);
+    }
+  },
+
+  pickFromBoneyard: async (socket: Socket) => {
+    try {
+      socket.broadcast.emit('opponentPickFromBoneyard');
       return true;
     } catch (err: any) {
       throw new Error(err.message);

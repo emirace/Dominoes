@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import DeckTile from "./DeckTile";
 import {
@@ -11,11 +11,16 @@ import {
 } from "@react-spring/web";
 import { useGameContext } from "./GameProvider";
 import useDistributor, { requestType } from "@/hooks/useDistributor";
-import { tileType } from "@/types";
+import { numberPair, tileType } from "@/types";
+import { TileAlignSpec } from "@/utils/game-utils";
 
-function PlayerDeck() {
-  const { canPlay, draggedTile } = useGameContext();
-  const [hand, setHand, from, boundRef, requestTile] = useDistributor(
+interface PlayerDeckProps {
+  anchors: TileAlignSpec[];
+}
+
+const PlayerDeck: React.FC<PlayerDeckProps> = ({ anchors }) => {
+  const { canPlay, draggedTile, isTurn } = useGameContext();
+  const [hand, setHand, from, boundRef, tileRequestApi] = useDistributor(
     requestType.MAIN_DECK
   );
   const canPlayStyles = canPlay ? "" : "opacity-80 pointer-events-none ";
@@ -49,6 +54,36 @@ function PlayerDeck() {
     setHand((prevArr: tileType[]) => prevArr.filter((tile) => tile.id !== id));
   };
 
+  useEffect(() => {
+    console.log(
+      "show boneyard",
+      isTurn,
+      !checkPlayerDeckMatches(hand, anchors)
+    );
+    if (
+      isTurn &&
+      !checkPlayerDeckMatches(hand, anchors) &&
+      anchors.length > 1
+    ) {
+      tileRequestApi();
+    }
+  }, [isTurn]);
+
+  function checkPlayerDeckMatches(
+    playerDeck: tileType[],
+    anchors: TileAlignSpec[]
+  ): boolean {
+    for (const deckTile of playerDeck) {
+      for (const anchor of anchors) {
+        if (anchor.canAccept.some((i) => deckTile.tile.includes(i))) {
+          console.log("match tile", deckTile.id, anchor.id);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   return (
     <div
       id="current-player"
@@ -73,7 +108,7 @@ function PlayerDeck() {
         className={`absolute flex left-[50%] translate-x-[-50%] items-center self-end gap-1 h-[120px] ${canPlayStyles}`}
       >
         {transitions((style, tile) => (
-          <animated.div key={tile.id} style={style}>
+          <animated.div key={tile?.id} style={style}>
             <DeckTile {...{ tile, onDropComplete }} />
           </animated.div>
         ))}
@@ -85,6 +120,6 @@ function PlayerDeck() {
       </div>
     </div>
   );
-}
+};
 
 export default PlayerDeck;

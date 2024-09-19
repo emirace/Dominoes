@@ -45,7 +45,6 @@ function RoomPage({ params }: { params: { slug: string } }) {
         }
         if (prevCount <= 1) {
           clearInterval(intervalId);
-          socket.emit("startGame", { gameId: params.slug, playerId });
           router.push(`/room/${params.slug}/game`);
           return 0;
         }

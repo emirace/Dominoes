@@ -40,17 +40,31 @@ export default function useDistributor(
       }
     };
     callbackID.current = registerDistCallback(distCallback);
+    console.log(distCallback);
+    console.log(
+      "register a callback",
+      "deckType",
+      deckType,
+      callbackID.current
+    );
     return () => unRegisterDistCallback(callbackID.current as number);
   }, []);
 
   const tileRequestApi = (amount?: number) => {
-    if (callbackID.current) {
-      if (deckType === requestType.MAIN_DECK) {
-        requestTile(false, callbackID.current, permits);
-      } else {
-        requestTile(true, callbackID.current, [], amount);
-      }
+    console.log(
+      "requesting tile ",
+      deckType,
+      callbackID.current,
+      "permits",
+      permits
+    );
+    // if (callbackID.current) {
+    if (deckType === requestType.MAIN_DECK) {
+      requestTile(false, callbackID.current, permits);
+    } else {
+      requestTile(true, callbackID.current, [], amount);
     }
+    // }
   };
   return [hand, setHand, from, boundRef, tileRequestApi];
 }

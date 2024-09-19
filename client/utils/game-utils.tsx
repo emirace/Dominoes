@@ -63,6 +63,7 @@ export class TileAlignSpec {
     "180deg": ["bottom", "top", "right", "left"],
   };
   private GAP = 3;
+  private _connectionSpecInternal: (0 | 1)[];
 
   constructor(tile: tileType, coordinates: numberPair, root: boolean = false) {
     this.id = tile.id;
@@ -72,6 +73,7 @@ export class TileAlignSpec {
     this.isDouble = this.tile[0] === this.tile[1];
     this.coordinates = coordinates;
     this._connectedAt = [];
+    this._connectionSpecInternal = this._initializeConnectionSpec();
 
     console.info(
       `${this.root ? "A root anchor" : "An anchor"} with a ${
@@ -84,12 +86,16 @@ export class TileAlignSpec {
     return this.root && this.isDouble;
   }
 
-  private get _connectionSpec(): (0 | 1)[] {
+  private _initializeConnectionSpec(): (0 | 1)[] {
     return this.isStepper
       ? [1, 1, 1, 1]
       : this.isDouble
       ? [0, 0, 1, 1]
       : [1, 1, 0, 0];
+  }
+
+  get _connectionSpec(): (0 | 1)[] {
+    return this._connectionSpecInternal;
   }
 
   get coordinates(): numberPair {
@@ -127,10 +133,9 @@ export class TileAlignSpec {
     const orientation = this._orientationSpec[`${this.tilt}deg`];
     const connectingDotCount = this.tile[connectingHalveIndex];
     let actualDropPosition: [string] = [""];
-    console.log(orientation, this.tilt);
     if (!this.isDouble) {
       if (this._connectionSpec[connectingHalveIndex]) {
-        this._connectionSpec[connectingHalveIndex] = 0;
+        this._connectionSpecInternal[connectingHalveIndex] = 0;
         this._connectedAt.push(connectingDotCount);
         actualDropPosition = [orientation[connectingHalveIndex]];
       } else
@@ -141,13 +146,13 @@ export class TileAlignSpec {
       const connectingHalveIndex = orientation.indexOf(dropSide);
 
       if (this._connectionSpec[connectingHalveIndex]) {
-        this._connectionSpec[connectingHalveIndex] = 0;
+        this._connectionSpecInternal[connectingHalveIndex] = 0;
         this._connectedAt.push(connectingDotCount);
         actualDropPosition = [orientation[connectingHalveIndex]]; // = dropSide
       } else {
         const availableHalveIndex = this._connectionSpec.indexOf(1);
         if (availableHalveIndex !== -1) {
-          this._connectionSpec[connectingHalveIndex] = 0;
+          this._connectionSpecInternal[connectingHalveIndex] = 0;
           this._connectedAt.push(connectingDotCount);
           actualDropPosition = [orientation[availableHalveIndex]];
         } else console.error("couldn't find '1' in _connectionSpec");
@@ -268,6 +273,8 @@ export class TileAlignSpec {
   setIn(conectingPosition: string, connectingHalveIndex: 1 | 0, scale: number) {
     let tilt: 0 | 90 | -90 | 180 = 0;
     let boundaryExtensionCoordinates: numberPair = this._coordinates;
+
+    // Determine tilt and coordinates based on the connecting position and halve index
     if (!connectingHalveIndex) {
       switch (conectingPosition) {
         case "top":
@@ -308,9 +315,38 @@ export class TileAlignSpec {
       }
     }
 
+    console.log("conectingPosition", conectingPosition);
+
+    // Update the tile's coordinates, tilt, and scale
     this.coordinates = boundaryExtensionCoordinates;
     this.tilt = tilt;
     this.scale = scale;
-    console.info(`Anchor ${this.id} set in at ${this.coordinates}`);
+
+    const sideMap: { [key: string]: string } = {
+      top: "bottom",
+      bottom: "top",
+      left: "right",
+      right: "left",
+    };
+
+    const oppositeSide = sideMap[conectingPosition];
+
+    // Update connection spec for the new tile
+    const orientation = this._orientationSpec[`${this.tilt}deg`];
+    const dropSideIndex = orientation.indexOf(oppositeSide);
+    const connectingDotCount = this.tile[dropSideIndex];
+
+    if (dropSideIndex !== -1 && this._connectionSpec[dropSideIndex]) {
+      console.log(oppositeSide, dropSideIndex, connectingDotCount);
+      this._connectionSpec[dropSideIndex] = 0; // Mark this side as connected
+      this._connectedAt.push(connectingDotCount);
+      console.info(`Updated connection spec: ${this._connectionSpec}`);
+    } else {
+      console.error(`Invalid drop side index for position: ${oppositeSide}`);
+    }
+
+    console.info(
+      `Anchor ${this.id} set in at ${this.coordinates} ${oppositeSide}`
+    );
   }
 }

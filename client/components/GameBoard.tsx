@@ -8,12 +8,23 @@ import { useGameContext } from "./GameProvider";
 import { useParams } from "next/navigation";
 import { TileAlignSpec } from "@/utils/game-utils";
 
-function GameBoard() {
-  const [anchors, setAnchors] = useState<TileAlignSpec[]>([]);
+interface GameBoardProps {
+  anchors: TileAlignSpec[];
+  setAnchors: React.Dispatch<React.SetStateAction<TileAlignSpec[]>>;
+}
+
+const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
   const [defaultDrop, setDefaultDrop] = useState<boolean>(true);
   const [playBoardRef, bounds] = useMeasure();
   const { socket } = useSocket();
-  const { playerId, setIsTurn, isTurn } = useGameContext();
+  const {
+    playerId,
+    setIsTurn,
+    isTurn,
+    requestTile,
+    deck,
+    setBoneYardDistSpec,
+  } = useGameContext();
   const { slug: gameId } = useParams();
   const activeHover = useRef<number | null>(null);
   const droppedTile = useRef<number | null>(null);
@@ -30,8 +41,21 @@ function GameBoard() {
       coordinates[1] - bounds.y,
     ];
     const newTile = new TileAlignSpec(tile, tileCoordinate);
-    console.log("gcfcutfut", newTile);
-    setAnchors((prevState) => [...prevState, newTile]);
+    setAnchors((prevState) => {
+      // Check if the tile with the same ID already exists in the state
+      const tileExists = prevState.some((anchor) => anchor.id === newTile.id);
+
+      // If the tile exists, replace it; otherwise, add it
+      if (tileExists) {
+        return prevState.map((anchor) =>
+          anchor.id === newTile.id ? newTile : anchor
+        );
+      }
+
+      // If the tile doesn't exist, add it to the state
+      return [...prevState, newTile];
+    });
+
     droppedTile.current = tile.id;
     droppedOn.current = id;
 
@@ -59,7 +83,7 @@ function GameBoard() {
         anchor.map((root) => {
           root.root = true;
           root.coordinates = [midX, midY];
-          root.scale = 1;
+          root.scale = 0.8;
           root.tilt = root.tile[0] === root.tile[1] ? 0 : 90;
           return root;
         })
@@ -70,13 +94,11 @@ function GameBoard() {
         const triggeredAnchor = anchors.find(
           (anchor) => anchor.id === droppedOn.current
         );
-
         const droppedAnchorIndex = anchors.findIndex(
           (anchor) => anchor.id === droppedTile.current
         );
         const droppedAnchor = anchors[droppedAnchorIndex];
         const newDroppedAnchor = triggeredAnchor?.setConnection(droppedAnchor);
-
         if (newDroppedAnchor) {
           setAnchors((arr) => {
             const newArr = [...arr];
@@ -92,12 +114,11 @@ function GameBoard() {
     if (count !== 0) setDefaultDrop(false);
   };
 
-  console.log(anchors);
   return (
     <div
       id="play-board"
       ref={playBoardRef}
-      className="absolute top-10 h-3/4 w-full z-0"
+      className="absolute top-10 h-3/4 w-full z-0 "
     >
       {anchors.map(
         ({ root, coordinates, canAccept, tile, tilt, scale, id }) => (
@@ -142,6 +163,6 @@ function GameBoard() {
       )}
     </div>
   );
-}
+};
 
 export default GameBoard;

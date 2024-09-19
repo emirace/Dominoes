@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "react-feather";
@@ -10,8 +10,51 @@ import { GameProvider, useGameContext } from "@/components/GameProvider";
 import OpponentDeck from "@/components/OpponentDeck";
 import BoneYard from "@/components/BoneYard";
 import FirstPlay from "@/components/FirstPlay";
+import { useSocket } from "@/components/SocketProvider";
+import useCreateAPI from "@/utils/api";
+import { Game } from "@/types";
+import useCurrentUser from "@/hooks/useCurrentUser";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { TileAlignSpec } from "@/utils/game-utils";
 
-function GamePage() {
+function GamePage({ params }: { params: { slug: string } }) {
+  const { socket } = useSocket();
+  const API = useCreateAPI();
+  const router = useRouter();
+  const { slug } = params;
+  const [game, setGame] = useState<Game | null>(null);
+  const { user } = useCurrentUser();
+  const [anchors, setAnchors] = useState<TileAlignSpec[]>([]);
+
+  const playerId = useMemo(
+    () => game?.players.findIndex((player) => player._id === user?._id) ?? -1,
+    [game?.players]
+  );
+
+  useEffect(() => {
+    API.get(`/game/${slug}`)
+      .then(({ data }) => {
+        if (!data.data || data.data.players.length === 0) {
+          return toast.error("Game not found");
+        }
+        setGame(data.data);
+      })
+      .catch((err) => {
+        toast.error("Game not found");
+        setTimeout(() => router.push("/"), 2000);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (socket && playerId >= 0) {
+      socket.emit("startGame", { gameId: params.slug, playerId });
+      return () => {
+        socket.off("startGame");
+      };
+    }
+  }, [socket, playerId]);
+
   return (
     <GameProvider>
       <div
@@ -41,8 +84,8 @@ function GamePage() {
             />
             <p>20</p>
           </div>
-          <PlayerDeck />
-          <GameBoard />
+          <PlayerDeck anchors={anchors} />
+          <GameBoard anchors={anchors} setAnchors={setAnchors} />
           <BoneYard />
           <FirstPlay />
         </div>

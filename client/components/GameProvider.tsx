@@ -63,7 +63,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [canPlay, setCanPlay] = useState(false);
   const [boneyard, setBoneyard] = useState<numberPair[]>([]);
   const [deck, setDeck] = useState<numberPair[]>([]);
-
+  console.log("is your turn", isTurn);
   const makeTile = (tiles: numberPair[]): tileType[] =>
     tiles.map((tile) => ({
       id: Number(`${tile[0]}${tile[1]}`),
@@ -99,6 +99,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const unRegisterDistCallback = (index: number) => {
+    console.log("un register a callback", index);
     setDistCallback((prevArr) => {
       const newList = [...prevArr];
       newList.splice(index, 1);
@@ -120,7 +121,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
           setTimeout(() => router.push("/"), 2000);
         });
 
-      socket.on("boneyard", ({ encryptedBoneyard, choices, isTurn }) => {
+      socket.on("boneyard", ({ encryptedBoneyard, choices, isTurn, text }) => {
+        console.log("boneyard------", text);
         if (!boneYardTile.current.length) {
           encryptedBoneyard && setBoneyard(encryptedBoneyard);
           const userDeck = choices.map((i: number) => encryptedBoneyard[i]);
@@ -174,11 +176,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         drawAmount: 7,
         callbacks: arr,
       };
+      console.log("array callbacks", arr);
       setBoneYardDistSpec((prevObj) => ({ ...prevObj, ...requestSpec }));
 
       return arr;
     });
   }, [boneYardTile.current, distCallback]);
+
+  console.log("current distcallback length", distCallback.length);
 
   return (
     <GameContext.Provider

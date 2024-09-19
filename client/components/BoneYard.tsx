@@ -3,6 +3,7 @@ import DominoesTile from "./DominoesTile";
 import { animated, config, useTransition } from "@react-spring/web";
 import { useGameContext } from "./GameProvider";
 import { numberPair } from "@/types";
+import { useSocket } from "./SocketProvider";
 
 function BoneYard() {
   const {
@@ -16,6 +17,7 @@ function BoneYard() {
     setFirstPlayer,
     setPermits,
   } = useGameContext();
+  const { socket } = useSocket();
   const gridRef = useRef<HTMLDivElement | null>(null);
   const complete = useRef(0);
 
@@ -68,6 +70,19 @@ function BoneYard() {
           retrace();
         }, 1000 + i * (1000 / boneYardDistSpec.callbacks.length));
       }
+    } else if (boneYardDistSpec.instant && deck) {
+      const randomTileRect = selectRandomTile();
+      console.log(boneYardDistSpec.callbacks);
+      // if (randomTileRect) boneYardDistSpec.callbacks[0](randomTileRect);
+      // else console.log("Couldn't pick a tile");
+      setBoneYardDistSpec({
+        active: false,
+        distribute: false,
+        instant: false,
+        drawAmount: 0,
+        required: [],
+        callbacks: [],
+      });
     }
   }, [boneYardDistSpec]);
 
@@ -78,6 +93,7 @@ function BoneYard() {
     const target = e.target as HTMLElement;
     const rect = target.getBoundingClientRect();
     const pickedTile = boneYardDistSpec.callbacks[0]([rect.x, rect.y]);
+    console.log(pickedTile, boneYardDistSpec.callbacks);
     if (
       pickedTile?.tile.some((item) => boneYardDistSpec.required?.includes(item))
     ) {
@@ -91,6 +107,7 @@ function BoneYard() {
       });
     }
     setTiles((tile) => tile.map((item, i) => (i === index ? "picked" : item)));
+    socket?.emit("pickFromBoneyard");
   };
 
   const selectRandomTile = () => {

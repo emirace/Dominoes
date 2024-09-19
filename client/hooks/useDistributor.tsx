@@ -60,9 +60,9 @@ export default function useDistributor(
     );
     // if (callbackID.current) {
     if (deckType === requestType.MAIN_DECK) {
-      requestTile(false, callbackID.current, permits);
+      requestTile(false, callbackID.current as number, permits);
     } else {
-      requestTile(true, callbackID.current, [], amount);
+      requestTile(true, callbackID.current as number, [], amount);
     }
     // }
   };

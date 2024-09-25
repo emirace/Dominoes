@@ -28,7 +28,8 @@ function GamePage({ params }: { params: { slug: string } }) {
   const [anchors, setAnchors] = useState<TileAlignSpec[]>([]);
 
   const playerId = useMemo(
-    () => game?.players.findIndex((player) => player._id === user?._id) ?? -1,
+    () =>
+      game?.players.findIndex((player) => player.user._id === user?._id) ?? -1,
     [game?.players]
   );
 

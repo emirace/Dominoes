@@ -1,26 +1,29 @@
 import { AlertProps } from "@/types";
 import React, { useEffect, useState } from "react";
 
-function GameAlert({ text, subText, isTop = false }: AlertProps) {
+function GameAlert({ text, subText, isTop = false, delay = 0 }: AlertProps) {
   const [isVisible, setIsVisible] = useState(true);
   const alertRef = React.useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (alertRef.current) {
-      alertRef.current.style.transform = `translate(-50%, ${
-        isTop ? "100px" : "-144px"
-      }) scale(1)`;
+      setTimeout(() => {
+        if (!alertRef.current) return;
+        alertRef.current.style.transform = `translate(-50%, ${
+          isTop ? "100px" : "-144px"
+        }) scale(1)`;
+      }, delay);
 
       setTimeout(() => {
         if (!alertRef.current) return;
         alertRef.current.style.transform = `translate(-50%, ${
           isTop ? "-50px" : "50px"
         }) scale(0.4)`;
-      }, 3000);
+      }, 3000 + delay);
 
       const hideTimer = setTimeout(() => {
         setIsVisible(false);
-      }, 4000);
+      }, 4000 + delay);
 
       return () => clearTimeout(hideTimer);
     }

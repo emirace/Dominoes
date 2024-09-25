@@ -25,11 +25,12 @@ function RoomPage({ params }: { params: { slug: string } }) {
   const dropdownRef = useRef(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const playerId = useMemo(
-    () => game?.players.findIndex((player) => player._id === user?._id) ?? -1,
-    [game?.players]
+    () =>
+      game?.players.findIndex((player) => player.user._id === user?._id) ?? -1,
+    [game?.players, user?._id]
   );
   const isParticipating = game?.players.some(
-    (player) => player._id === user?._id
+    (player) => player.user._id === user?._id
   );
 
   const startCountdown = () => {
@@ -285,7 +286,7 @@ function RoomPage({ params }: { params: { slug: string } }) {
             <PlayerProfileCard
               isReady={i === 0 ? player1Ready : player2Ready}
               key={i}
-              player={player}
+              player={player.user}
             />
           ))}
         </div>

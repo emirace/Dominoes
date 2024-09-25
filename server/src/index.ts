@@ -1,11 +1,10 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express from 'express';
 import { createServer } from 'http';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { errorHandler } from './helpers/ResponseHelpers';
 import { connectDB } from './db';
 import cors from 'cors';
 import { config } from 'dotenv';
-import * as types from './types';
 import socketMiddleware from './middlewares/socketMiddleware';
 
 import UserRoutes from './routes/User.route';
@@ -55,7 +54,7 @@ io.on('connection', (socket) => {
   socket.on('joinGame', ({ gameId }) => {
     SocketController.joinGame(gameId, socket, io, socket.request.token);
   });
-  socket.on('initialTiles', ({ gameId, initialTiles }) => {
+  socket.on('initialTiles', ({ gameId }) => {
     SocketController.joinGame(gameId, socket, io, socket.request.token);
   });
   socket.on('ready', ({ gameId, player }) => {
@@ -64,8 +63,8 @@ io.on('connection', (socket) => {
   socket.on('startGame', ({ gameId, playerId }) => {
     SocketController.startGame(socket, gameId, playerId);
   });
-  socket.on('pickFromBoneyard', () => {
-    SocketController.pickFromBoneyard(socket);
+  socket.on('pickFromBoneyard', ({ gameId }) => {
+    SocketController.pickFromBoneyard(socket, gameId, socket.request.token);
   });
   socket.on(
     'tilePlayed',

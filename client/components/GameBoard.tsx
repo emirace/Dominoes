@@ -17,18 +17,75 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
   const [defaultDrop, setDefaultDrop] = useState<boolean>(true);
   const [playBoardRef, bounds] = useMeasure();
   const { socket } = useSocket();
-  const {
-    playerId,
-    setIsTurn,
-    isTurn,
-    requestTile,
-    deck,
-    setBoneYardDistSpec,
-  } = useGameContext();
+  const { playerId, opponentWin, playerWin } = useGameContext();
   const { slug: gameId } = useParams();
   const activeHover = useRef<number | null>(null);
   const droppedTile = useRef<number | null>(null);
   const droppedOn = useRef<number | null>(null);
+
+  // Get the center of the game board
+  const getBoardCenter = (): numberPair => {
+    const midX = (bounds.right - bounds.left) / 2;
+    const midY = (bounds.bottom - bounds.top) / 2;
+    return [midX, midY];
+  };
+
+  // Calculate the bounding area of all the tiles/anchors
+  const calculateBoundingBox = (tiles: TileAlignSpec[]) => {
+    console.log("tiles", tiles, tiles[0].coordinates);
+    const xCoordinates = tiles.map((anchor) => anchor._coordinates[0]);
+    const yCoordinates = tiles.map((anchor) => anchor._coordinates[1]);
+
+    const minX = Math.min(...xCoordinates);
+    const maxX = Math.max(...xCoordinates);
+    const minY = Math.min(...yCoordinates);
+    const maxY = Math.max(...yCoordinates);
+    console.log("bounding cordinate", xCoordinates, yCoordinates);
+    console.log("minX", minX, "minY", minY, "maxX", maxX, "maxY", maxY);
+
+    return {
+      minX,
+      maxX,
+      minY,
+      maxY,
+      width: maxX - minX,
+      height: maxY - minY,
+    };
+  };
+
+  // Calculate the midpoint of the bounding box
+  const getBoundingBoxMidpoint = (tiles: TileAlignSpec[]) => {
+    const boundingBox = calculateBoundingBox(tiles);
+    console.log("boundingBox", boundingBox);
+    const midX = boundingBox.minX + boundingBox.width / 2;
+    const midY = boundingBox.minY + boundingBox.height / 2;
+    console.log("midpoit", midX, midY);
+    return [midX, midY];
+  };
+
+  // Function to adjust anchors to center them on the board
+  const adjustAnchorsToCenter = (tiles: TileAlignSpec[]) => {
+    const [boardCenterX, boardCenterY] = getBoardCenter();
+    const [boundingBoxMidX, boundingBoxMidY] = getBoundingBoxMidpoint(tiles);
+
+    console.log("board", boardCenterX, boardCenterY);
+
+    // Calculate the offset
+    const offsetX = boardCenterX - boundingBoxMidX;
+    const offsetY = boardCenterY - boundingBoxMidY;
+    console.log("offset", offsetX, offsetY);
+
+    // Adjust anchor positions by the offset
+    setAnchors((prevAnchors) =>
+      prevAnchors.map((anchor) => {
+        anchor.coordinates = [
+          anchor._coordinates[0] + offsetX,
+          anchor._coordinates[1] + offsetY,
+        ];
+        return anchor;
+      })
+    );
+  };
 
   const initailSetAnchor = (
     tile: tileType,
@@ -72,18 +129,15 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
       });
     }
   };
-
+  console.log(anchors);
   useEffect(() => {
     if (anchors.length === 1) {
-      const [midX, midY] = [
-        (bounds.right - bounds.left) / 2,
-        (bounds.bottom - bounds.top) / 2,
-      ];
+      const [midX, midY] = getBoardCenter();
       setAnchors((anchor) =>
         anchor.map((root) => {
           root.root = true;
           root.coordinates = [midX, midY];
-          root.scale = 0.8;
+          root.scale = 0.6;
           root.tilt = root.tile[0] === root.tile[1] ? 0 : 90;
           return root;
         })
@@ -98,17 +152,27 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
           (anchor) => anchor.id === droppedTile.current
         );
         const droppedAnchor = anchors[droppedAnchorIndex];
+        console.log(triggeredAnchor);
         const newDroppedAnchor = triggeredAnchor?.setConnection(droppedAnchor);
+        console.log(newDroppedAnchor);
         if (newDroppedAnchor) {
           setAnchors((arr) => {
             const newArr = [...arr];
             newArr[droppedAnchorIndex] = newDroppedAnchor;
+            console.log("newArr", newArr);
+            // adjustAnchorsToCenter(newArr);
             return newArr;
           });
         }
       }
     }
   }, [anchors.length, bounds]);
+
+  useEffect(() => {
+    if (opponentWin || playerWin) {
+      setAnchors([]);
+    }
+  }, [opponentWin, , playerWin]);
 
   const registerDrop = (count: number) => {
     if (count !== 0) setDefaultDrop(false);

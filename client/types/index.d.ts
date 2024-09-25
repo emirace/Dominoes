@@ -11,7 +11,11 @@ export interface User {
 export interface Game {
   gameId: string;
   isPrivate: boolean;
-  players: User[];
+  players: {
+    user: User;
+    score: number;
+    tiles: numberPair[];
+  }[];
 }
 
 export interface AnchorProp {
@@ -31,6 +35,8 @@ export interface AnchorProp {
 
 export type numberPair = [number, number];
 export type tileType = { id: number; tile: numberPair };
+
+export type userWin = { points: number; tiles: tileType[] };
 
 export interface DominoesTileProps {
   tile: tileType;
@@ -79,7 +85,10 @@ export interface boneYardDistSpecType {
   instant: boolean;
   drawAmount: number;
   required: number[] | null;
-  callbacks: ((position: numberPair) => tileType | undefined)[];
+  callbacks: ((
+    position: numberPair,
+    distribute?: boolean
+  ) => Promise<tileType | undefined>)[];
 }
 
 export type PlayerId = -1 | 0 | 1;
@@ -96,6 +105,10 @@ export interface GameContextType {
   setFirstPlayer: React.Dispatch<React.SetStateAction<number>>;
 
   selectFromBoneYard: () => tileType;
+  selectFromBoneYardServer: () => Promise<tileType>;
+  opponentWin: userWin | null;
+  playerWin: userWin | null;
+
   setDeck: (deck: numberPair[]) => void;
 
   permits: number[];
@@ -108,7 +121,10 @@ export interface GameContextType {
     React.SetStateAction<boneYardDistSpecType>
   >;
   registerDistCallback: (
-    callback: (position: numberPair) => tileType | undefined
+    callback: (
+      position: numberPair,
+      distribute?: boolean
+    ) => Promise<tileType | undefined>
   ) => number;
   unRegisterDistCallback: (index: number) => void;
   requestTile: (
@@ -134,6 +150,7 @@ export interface AlertProps {
   text: string;
   subText?: string;
   isTop?: boolean;
+  delay?: number;
 }
 
 export type useDistributorType = [

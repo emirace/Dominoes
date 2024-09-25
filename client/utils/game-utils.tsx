@@ -144,7 +144,6 @@ export class TileAlignSpec {
         );
     } else {
       const connectingHalveIndex = orientation.indexOf(dropSide);
-
       if (this._connectionSpec[connectingHalveIndex]) {
         this._connectionSpecInternal[connectingHalveIndex] = 0;
         this._connectedAt.push(connectingDotCount);
@@ -152,7 +151,7 @@ export class TileAlignSpec {
       } else {
         const availableHalveIndex = this._connectionSpec.indexOf(1);
         if (availableHalveIndex !== -1) {
-          this._connectionSpecInternal[connectingHalveIndex] = 0;
+          this._connectionSpecInternal[availableHalveIndex] = 0;
           this._connectedAt.push(connectingDotCount);
           actualDropPosition = [orientation[availableHalveIndex]];
         } else console.error("couldn't find '1' in _connectionSpec");
@@ -235,6 +234,7 @@ export class TileAlignSpec {
 
     let position: string = "";
     const angle = calcVectorAngle(vec, [0, 100]);
+    console.log("angle", angle);
     if (angle >= 0 && angle <= 45) position = "top";
     else if (angle > 45 && angle < 135) {
       if (vec[0] > 0) position = "right";
@@ -262,9 +262,12 @@ export class TileAlignSpec {
       { id: tileSpec.id, tile: tileSpec.tile },
       attachBoundaryCoordinates
     );
+    const InComingConnectingHalveIndex = incomingTile.indexOf(
+      incomingTile.find((num) => this.tile.includes(num)) as number
+    ) as 0 | 1;
     newConnection.setIn(
       ...availableDropPosition,
-      connectingHalveIndex,
+      InComingConnectingHalveIndex,
       this.scale
     );
     return newConnection;
@@ -315,7 +318,7 @@ export class TileAlignSpec {
       }
     }
 
-    console.log("conectingPosition", conectingPosition);
+    console.log("conectingPosition", connectingHalveIndex, conectingPosition);
 
     // Update the tile's coordinates, tilt, and scale
     this.coordinates = boundaryExtensionCoordinates;
@@ -337,10 +340,8 @@ export class TileAlignSpec {
     const connectingDotCount = this.tile[dropSideIndex];
 
     if (dropSideIndex !== -1 && this._connectionSpec[dropSideIndex]) {
-      console.log(oppositeSide, dropSideIndex, connectingDotCount);
-      this._connectionSpec[dropSideIndex] = 0; // Mark this side as connected
+      this._connectionSpec[dropSideIndex] = 0;
       this._connectedAt.push(connectingDotCount);
-      console.info(`Updated connection spec: ${this._connectionSpec}`);
     } else {
       console.error(`Invalid drop side index for position: ${oppositeSide}`);
     }

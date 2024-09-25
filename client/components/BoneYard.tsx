@@ -15,7 +15,6 @@ function BoneYard() {
     setCanPlay,
     setBoneYardDistSpec,
     setFirstPlayer,
-    setPermits,
   } = useGameContext();
   const { socket } = useSocket();
   const gridRef = useRef<HTMLDivElement | null>(null);
@@ -63,7 +62,6 @@ function BoneYard() {
                   setFirstPlayer(isTurn ? playerId : playerId === 0 ? 1 : 0);
                 }
                 setCanPlay(true);
-                setPermits([19, 10]);
               }
             }
           };
@@ -72,42 +70,33 @@ function BoneYard() {
       }
     } else if (boneYardDistSpec.instant && deck) {
       const randomTileRect = selectRandomTile();
-      console.log(boneYardDistSpec.callbacks);
-      // if (randomTileRect) boneYardDistSpec.callbacks[0](randomTileRect);
-      // else console.log("Couldn't pick a tile");
-      setBoneYardDistSpec({
-        active: false,
-        distribute: false,
-        instant: false,
-        drawAmount: 0,
-        required: [],
-        callbacks: [],
-      });
+      if (randomTileRect) boneYardDistSpec.callbacks[0](randomTileRect);
+      else console.log("Couldn't pick a tile");
+      const timeoutId = setTimeout(() => {
+        setBoneYardDistSpec({
+          active: false,
+          distribute: false,
+          instant: false,
+          drawAmount: 0,
+          required: [],
+          callbacks: [],
+        });
+      }, 1000);
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }
   }, [boneYardDistSpec]);
 
-  const handleSelectTile = (
+  const handleSelectTile = async (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     index: number
   ) => {
     const target = e.target as HTMLElement;
     const rect = target.getBoundingClientRect();
-    const pickedTile = boneYardDistSpec.callbacks[0]([rect.x, rect.y]);
-    console.log(pickedTile, boneYardDistSpec.callbacks);
-    if (
-      pickedTile?.tile.some((item) => boneYardDistSpec.required?.includes(item))
-    ) {
-      setBoneYardDistSpec({
-        active: false,
-        distribute: false,
-        instant: false,
-        drawAmount: 0,
-        required: [],
-        callbacks: [],
-      });
-    }
     setTiles((tile) => tile.map((item, i) => (i === index ? "picked" : item)));
-    socket?.emit("pickFromBoneyard");
+    await boneYardDistSpec.callbacks[0]([rect.x, rect.y], false);
   };
 
   const selectRandomTile = () => {

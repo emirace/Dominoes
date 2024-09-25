@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import DeckTile from "./DeckTile";
 import {
@@ -19,10 +19,20 @@ interface PlayerDeckProps {
 }
 
 const PlayerDeck: React.FC<PlayerDeckProps> = ({ anchors }) => {
-  const { canPlay, draggedTile, isTurn } = useGameContext();
+  const {
+    canPlay,
+    draggedTile,
+    isTurn,
+    setBoneYardDistSpec,
+    opponentWin,
+    playerWin,
+  } = useGameContext();
   const [hand, setHand, from, boundRef, tileRequestApi] = useDistributor(
     requestType.MAIN_DECK
   );
+  const [revealed, setRevealed] = useState(false);
+  const [points, setPoints] = useState(0);
+
   const canPlayStyles = canPlay ? "" : "opacity-80 pointer-events-none ";
 
   const springRef = useSpringRef();
@@ -55,19 +65,44 @@ const PlayerDeck: React.FC<PlayerDeckProps> = ({ anchors }) => {
   };
 
   useEffect(() => {
-    console.log(
-      "show boneyard",
-      isTurn,
-      !checkPlayerDeckMatches(hand, anchors)
-    );
-    if (
-      isTurn &&
-      !checkPlayerDeckMatches(hand, anchors) &&
-      anchors.length > 1
-    ) {
-      tileRequestApi();
+    const timeoutId = setTimeout(() => {
+      if (anchors.length > 0) {
+        if (isTurn && !checkPlayerDeckMatches(hand, anchors)) {
+          tileRequestApi();
+        } else {
+          setBoneYardDistSpec({
+            active: false,
+            distribute: false,
+            instant: false,
+            drawAmount: 0,
+            required: [],
+            callbacks: [],
+          });
+        }
+      }
+    }, 1000);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [anchors, hand, isTurn]);
+
+  useEffect(() => {
+    if (opponentWin) {
+      setTimeout(() => {
+        setRevealed(true);
+      }, 1000);
+      setTimeout(() => {
+        setHand([]);
+      }, 5000);
     }
-  }, [isTurn]);
+  }, [opponentWin]);
+
+  useEffect(() => {
+    if (playerWin) {
+      setPoints((prev) => prev + playerWin.points);
+    }
+  }, [playerWin]);
 
   function checkPlayerDeckMatches(
     playerDeck: tileType[],
@@ -76,7 +111,6 @@ const PlayerDeck: React.FC<PlayerDeckProps> = ({ anchors }) => {
     for (const deckTile of playerDeck) {
       for (const anchor of anchors) {
         if (anchor.canAccept.some((i) => deckTile.tile.includes(i))) {
-          console.log("match tile", deckTile.id, anchor.id);
           return true;
         }
       }
@@ -108,14 +142,20 @@ const PlayerDeck: React.FC<PlayerDeckProps> = ({ anchors }) => {
         className={`absolute flex left-[50%] translate-x-[-50%] items-center self-end gap-1 h-[120px] ${canPlayStyles}`}
       >
         {transitions((style, tile) => (
-          <animated.div key={tile?.id} style={style}>
+          <animated.div
+            key={tile?.id}
+            style={{
+              ...style,
+              transform: revealed ? `translate(0px, -100px)` : style.transform,
+            }}
+          >
             <DeckTile {...{ tile, onDropComplete }} />
           </animated.div>
         ))}
       </animated.div>
 
       <div className="text-center">
-        <p>0</p>
+        <p>{points}</p>
         <p className="text-xs text-[#afb7c1]">points</p>
       </div>
     </div>

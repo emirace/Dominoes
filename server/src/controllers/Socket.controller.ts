@@ -178,7 +178,7 @@ const SocketController = {
         game.players[playerId].score += points;
 
         // Check if game is over (you can set your own game-ending conditions)
-        const gameOver = game.players[playerId].score >= 10; // Example score threshold for game over
+        const gameOver = game.players[playerId].score >= 100; // Example score threshold for game over
 
         if (gameOver) {
           // Emit game over event

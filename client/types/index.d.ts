@@ -93,6 +93,11 @@ export interface boneYardDistSpecType {
 
 export type PlayerId = -1 | 0 | 1;
 
+export interface GameOver {
+  winner: { user: User; score: number };
+  loser: { user: User; score: number };
+}
+
 export interface GameContextType {
   draggedTile: tileType | null;
   setDraggedTile: React.Dispatch<React.SetStateAction<tileType | null>>;
@@ -103,7 +108,7 @@ export interface GameContextType {
   firstPlayer: number;
   playerId: PlayerId;
   setFirstPlayer: React.Dispatch<React.SetStateAction<number>>;
-
+  gameOver: GameOver | null;
   selectFromBoneYard: () => tileType;
   selectFromBoneYardServer: () => Promise<tileType>;
   opponentWin: userWin | null;

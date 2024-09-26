@@ -15,6 +15,7 @@ import {
   Game,
   PlayerId,
   userWin,
+  GameOver,
 } from "@/types";
 import { useSocket } from "./SocketProvider";
 import { useParams, useRouter } from "next/navigation";
@@ -67,6 +68,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [deck, setDeck] = useState<numberPair[]>([]);
   const [playerWin, setPlayerWin] = useState<userWin | null>(null);
   const [opponentWin, setOpponentWin] = useState<userWin | null>(null);
+  const [gameOver, setGameOver] = useState<GameOver | null>(null);
 
   const makeTile = (tiles: numberPair[]): tileType[] =>
     tiles.map((tile) => ({
@@ -187,7 +189,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       );
 
       socket.on("gameWon", ({ tiles, points }) => {
-        console.log("won");
         setIsTurn(false);
         setCanPlay(false);
         const newTiles = tiles.map((tile: numberPair) => ({
@@ -195,9 +196,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
           tile,
         }));
         setPlayerWin({ points, tiles: newTiles });
+        setFirstPlayer(-2);
       });
       socket.on("opponentWon", ({ tiles, points }) => {
-        console.log("won");
         setIsTurn(false);
         setCanPlay(false);
         const newTiles = tiles.map((tile: numberPair) => ({
@@ -205,6 +206,23 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
           tile,
         }));
         setOpponentWin({ points, tiles: newTiles });
+        setFirstPlayer(-2);
+      });
+
+      socket.on("gameOver", ({ winner, loser, tiles, points, youWin }) => {
+        setIsTurn(false);
+        setCanPlay(false);
+        const newTiles = tiles.map((tile: numberPair) => ({
+          id: Number(`${tile[0]}${tile[1]}`),
+          tile,
+        }));
+        setGameOver({ winner, loser });
+        if (youWin) {
+          setPlayerWin({ points, tiles: newTiles });
+        } else {
+          setOpponentWin({ points, tiles: newTiles });
+        }
+        setFirstPlayer(-2);
       });
 
       return () => {
@@ -241,6 +259,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         draggedTile,
         setDraggedTile,
         recentlyDroppedTile,
+        gameOver,
         selectFromBoneYard,
         selectFromBoneYardServer,
         deck,

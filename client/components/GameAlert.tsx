@@ -37,7 +37,7 @@ function GameAlert({ text, subText, isTop = false, delay = 0 }: AlertProps) {
     <div
       ref={alertRef}
       className={`absolute transition-all px-16 py-10 left-1/2 flex-col ${
-        isTop ? "-top-[50px]" : "bottom-[-10px]"
+        isTop ? "-top-[100px]" : "bottom-[-10px]"
       } bg-main-gray min-h-20 flex items-center justify-center mx-auto rounded-lg shadow-lg`}
     >
       {isTop && (

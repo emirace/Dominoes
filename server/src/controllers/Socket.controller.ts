@@ -117,6 +117,7 @@ const SocketController = {
 
       if (game) {
         game.gameData.boneyard = boneyard;
+        game.gameData.gameboard = [];
 
         game.players[0].tiles = player1Tiles;
         game.players[1].tiles = player2Tiles;
@@ -139,7 +140,9 @@ const SocketController = {
     triggeredTile: TileClassSpec
   ) => {
     try {
-      const game = await Game.findOne({ gameId });
+      const game = await Game.findOne({ gameId }).populate({
+        path: 'players.user',
+      });
       if (!game) {
         return socket.emit('tileError', 'Game not found');
       }
@@ -153,33 +156,71 @@ const SocketController = {
         return socket.emit('tileError', 'Not your turn');
       }
 
+      // Add the played tile to the game board
       gameboard.push({
         currentTile: droppedTile,
         tileConnectedTo: triggeredTile,
       });
       game.gameData.gameboard = gameboard;
 
+      // Remove the played tile from the player's hand
       const playerTiles =
         playerId === 0 ? game.players[0].tiles : game.players[1].tiles;
       game.players[playerId].tiles = playerTiles.filter(
         (tile) => Number(`${tile[0]}${tile[1]}`) !== droppedTile.id
       );
+
       const opponentId = playerId === 0 ? 1 : 0;
       const hasWon = checkForWin(game, playerId);
+
       if (hasWon) {
         const points = calculateOpponentTilesValue(game, playerId);
         game.players[playerId].score += points;
-        // game.active = false;
 
-        socket.emit('gameWon', {
-          tiles: game.players[opponentId].tiles,
-          points,
-        });
-        socket.broadcast.emit('opponentWon', {
-          tiles: game.players[playerId].tiles,
-          points,
-        });
+        // Check if game is over (you can set your own game-ending conditions)
+        const gameOver = game.players[playerId].score >= 10; // Example score threshold for game over
+
+        if (gameOver) {
+          // Emit game over event
+          socket.emit('gameOver', {
+            winner: game.players[playerId],
+            loser: game.players[opponentId],
+            tiles: game.players[opponentId].tiles,
+            points,
+            youWin: true,
+          });
+          socket.broadcast.emit('gameOver', {
+            winner: game.players[playerId],
+            loser: game.players[opponentId],
+            tiles: game.players[playerId].tiles,
+            points,
+            youWin: false,
+          });
+
+          // Set game as inactive
+          game.active = false;
+        } else {
+          const index = currentGames.indexOf(gameId);
+          if (index !== -1) {
+            currentGames.splice(index, 1); // Removes the gameId from the array
+          }
+
+          socket.emit('gameWon', {
+            tiles: game.players[opponentId].tiles,
+            points,
+          });
+          socket.broadcast.emit('opponentWon', {
+            tiles: game.players[playerId].tiles,
+            points,
+          });
+          await game.save();
+
+          setTimeout(() => {
+            SocketController.startGame(socket, gameId, playerId);
+          }, 5000);
+        }
       } else {
+        // Switch turn to opponent
         game.turn = opponentId;
         socket.emit('userPlayed');
         socket.broadcast.emit('opponentPlayed', {
@@ -187,9 +228,9 @@ const SocketController = {
           gameboard,
           isTurn: game.turn !== playerId,
         });
+        await game.save();
       }
 
-      await game.save();
       return true;
     } catch (err: any) {
       throw new Error(err.message);

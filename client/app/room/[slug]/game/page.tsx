@@ -17,6 +17,7 @@ import useCurrentUser from "@/hooks/useCurrentUser";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { TileAlignSpec } from "@/utils/game-utils";
+import GameOver from "@/components/GameOver";
 
 function GamePage({ params }: { params: { slug: string } }) {
   const { socket } = useSocket();
@@ -62,6 +63,7 @@ function GamePage({ params }: { params: { slug: string } }) {
         id="game"
         className='bg-dark-blue bg-[url("/game-bg.png")] relative bg-cover justify-center bg-center flex items-end min-w-screen min-h-screen overflow-hidden z-0'
       >
+        <GameOver />
         <OpponentDeck />
         <div className="bg-main-blue  relative border-[9px] rounded-2xl border-black-15 w-full min-h-[calc(100vh_-_24px)] h-full max-w-[700px]">
           <div className="bg-main-blue rounded-9 w-full h-full"></div>

@@ -15,6 +15,8 @@ function BoneYard() {
     setCanPlay,
     setBoneYardDistSpec,
     setFirstPlayer,
+    opponentWin,
+    playerWin,
   } = useGameContext();
   const { socket } = useSocket();
   const gridRef = useRef<HTMLDivElement | null>(null);
@@ -62,6 +64,7 @@ function BoneYard() {
                   setFirstPlayer(isTurn ? playerId : playerId === 0 ? 1 : 0);
                 }
                 setCanPlay(true);
+                complete.current = 0;
               }
             }
           };
@@ -88,6 +91,10 @@ function BoneYard() {
       };
     }
   }, [boneYardDistSpec]);
+
+  useEffect(() => {
+    setTiles(Array.from({ length: 28 }, () => "unpicked"));
+  }, [playerWin, opponentWin]);
 
   const handleSelectTile = async (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,

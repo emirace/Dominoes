@@ -20,8 +20,7 @@ export interface Game {
     }[];
   };
   turn: 0 | 1;
-  winner?: Types.ObjectId | null; // Optional: Track winner by User ID
-  status: 'waiting' | 'in-progress' | 'completed'; // Game status enum
+  winner?: Types.ObjectId | null;
 }
 
 const gameSchema = new mongoose.Schema<Game>(
@@ -90,11 +89,6 @@ const gameSchema = new mongoose.Schema<Game>(
       type: SchemaTypes.ObjectId,
       ref: 'User',
       default: null, // Optional winner tracking
-    },
-    status: {
-      type: String,
-      enum: ['waiting', 'in-progress', 'completed'],
-      default: 'waiting',
     },
   },
   { timestamps: true }

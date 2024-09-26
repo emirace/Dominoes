@@ -67,7 +67,7 @@ const PlayerDeck: React.FC<PlayerDeckProps> = ({ anchors }) => {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (anchors.length > 0) {
-        if (isTurn && !checkPlayerDeckMatches(hand, anchors)) {
+        if (isTurn && canPlay && !checkPlayerDeckMatches(hand, anchors)) {
           tileRequestApi();
         } else {
           setBoneYardDistSpec({
@@ -95,6 +95,9 @@ const PlayerDeck: React.FC<PlayerDeckProps> = ({ anchors }) => {
       setTimeout(() => {
         setHand([]);
       }, 5000);
+      setTimeout(() => {
+        setRevealed(false);
+      }, 5500);
     }
   }, [opponentWin]);
 

@@ -16,12 +16,18 @@ interface GameBoardProps {
 const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
   const [defaultDrop, setDefaultDrop] = useState<boolean>(true);
   const [playBoardRef, bounds] = useMeasure();
+  const [tilesBoxRef, tilesBound] = useMeasure();
   const { socket } = useSocket();
   const { playerId, opponentWin, playerWin } = useGameContext();
   const { slug: gameId } = useParams();
   const activeHover = useRef<number | null>(null);
   const droppedTile = useRef<number | null>(null);
   const droppedOn = useRef<number | null>(null);
+  const [transform, setTransform] = useState<string>("");
+  const [scale, setScale] = useState<number>(1);
+
+  // Padding/Threshold for the board boundaries
+  const padding = 60; // Adjust this value as needed
 
   // Get the center of the game board
   const getBoardCenter = (): numberPair => {
@@ -31,17 +37,14 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
   };
 
   // Calculate the bounding area of all the tiles/anchors
-  const calculateBoundingBox = (tiles: TileAlignSpec[]) => {
-    console.log("tiles", tiles, tiles[0].coordinates);
-    const xCoordinates = tiles.map((anchor) => anchor._coordinates[0]);
-    const yCoordinates = tiles.map((anchor) => anchor._coordinates[1]);
+  const calculateBoundingBox = () => {
+    const xCoordinates = anchors.map((anchor) => anchor._coordinates[0]);
+    const yCoordinates = anchors.map((anchor) => anchor._coordinates[1]);
 
     const minX = Math.min(...xCoordinates);
     const maxX = Math.max(...xCoordinates);
     const minY = Math.min(...yCoordinates);
     const maxY = Math.max(...yCoordinates);
-    console.log("bounding cordinate", xCoordinates, yCoordinates);
-    console.log("minX", minX, "minY", minY, "maxX", maxX, "maxY", maxY);
 
     return {
       minX,
@@ -53,38 +56,28 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
     };
   };
 
-  // Calculate the midpoint of the bounding box
-  const getBoundingBoxMidpoint = (tiles: TileAlignSpec[]) => {
-    const boundingBox = calculateBoundingBox(tiles);
-    console.log("boundingBox", boundingBox);
-    const midX = boundingBox.minX + boundingBox.width / 2;
-    const midY = boundingBox.minY + boundingBox.height / 2;
-    console.log("midpoit", midX, midY);
-    return [midX, midY];
-  };
-
-  // Function to adjust anchors to center them on the board
-  const adjustAnchorsToCenter = (tiles: TileAlignSpec[]) => {
+  // Adjust the bounding box to center the tiles
+  const adjustBoundingBoxToCenter = () => {
     const [boardCenterX, boardCenterY] = getBoardCenter();
-    const [boundingBoxMidX, boundingBoxMidY] = getBoundingBoxMidpoint(tiles);
+    const { minX, minY, width, height } = calculateBoundingBox();
 
-    console.log("board", boardCenterX, boardCenterY);
+    const boundingBoxMidX = minX + width / 2;
+    const boundingBoxMidY = minY + height / 2;
 
-    // Calculate the offset
-    const offsetX = boardCenterX - boundingBoxMidX;
-    const offsetY = boardCenterY - boundingBoxMidY;
-    console.log("offset", offsetX, offsetY);
+    // Calculate the translation needed to center the bounding box on the board
+    const translateX = boardCenterX - boundingBoxMidX;
+    const translateY = boardCenterY - boundingBoxMidY;
 
-    // Adjust anchor positions by the offset
-    setAnchors((prevAnchors) =>
-      prevAnchors.map((anchor) => {
-        anchor.coordinates = [
-          anchor._coordinates[0] + offsetX,
-          anchor._coordinates[1] + offsetY,
-        ];
-        return anchor;
-      })
-    );
+    // Calculate the scaling factor with padding in mind
+    const paddedBoardWidth = bounds.width - 2 * padding;
+    const paddedBoardHeight = bounds.height - 2 * padding;
+
+    const scaleX = paddedBoardWidth / width;
+    const scaleY = paddedBoardHeight / height;
+    const newScale = Math.min(scaleX, scaleY, 1); // Ensure scale doesn't exceed 1 (no zooming out if not needed)
+
+    setTransform(`translate(${translateX}px, ${translateY}px)`);
+    setScale(newScale);
   };
 
   const initailSetAnchor = (
@@ -94,8 +87,8 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
     isOpponent = false
   ) => {
     const tileCoordinate: numberPair = [
-      coordinates[0] - bounds.x,
-      coordinates[1] - bounds.y,
+      coordinates[0] - tilesBound.x,
+      coordinates[1] - tilesBound.y,
     ];
     const newTile = new TileAlignSpec(tile, tileCoordinate);
     setAnchors((prevState) => {
@@ -129,7 +122,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
       });
     }
   };
-  console.log(anchors);
+
   useEffect(() => {
     if (anchors.length === 1) {
       const [midX, midY] = getBoardCenter();
@@ -137,7 +130,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
         anchor.map((root) => {
           root.root = true;
           root.coordinates = [midX, midY];
-          root.scale = 0.6;
+          root.scale = 1;
           root.tilt = root.tile[0] === root.tile[1] ? 0 : 90;
           return root;
         })
@@ -152,25 +145,42 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
           (anchor) => anchor.id === droppedTile.current
         );
         const droppedAnchor = anchors[droppedAnchorIndex];
-        console.log(triggeredAnchor);
         const newDroppedAnchor = triggeredAnchor?.setConnection(droppedAnchor);
-        console.log(newDroppedAnchor);
         if (newDroppedAnchor) {
           setAnchors((arr) => {
             const newArr = [...arr];
             newArr[droppedAnchorIndex] = newDroppedAnchor;
-            console.log("newArr", newArr);
-            // adjustAnchorsToCenter(newArr);
             return newArr;
           });
         }
       }
     }
-  }, [anchors.length, bounds]);
+  }, [anchors.length]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (anchors.length > 0) {
+        adjustBoundingBoxToCenter();
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [anchors, bounds]);
 
   useEffect(() => {
     if (opponentWin || playerWin) {
-      setAnchors([]);
+      const timeoutId = setTimeout(() => {
+        setAnchors([]);
+        setTransform("");
+        setScale(1);
+        setDefaultDrop(true);
+      }, 1000);
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }
   }, [opponentWin, , playerWin]);
 
@@ -184,32 +194,42 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
       ref={playBoardRef}
       className="absolute top-10 h-3/4 w-full z-0 "
     >
-      {anchors.map(
-        ({ root, coordinates, canAccept, tile, tilt, scale, id }) => (
-          <>
-            <Anchor
-              key={id}
-              {...{
-                root,
-                coordinates,
-                tile: { id, tile },
-                tilt,
-                canAccept,
-                scale,
-                initailSetAnchor,
-                activeHover,
-              }}
-            />
-            <div
-              className="w-1 h-1 bg-red-900 absolute z-50"
-              style={{
-                top: (bounds.bottom - bounds.top) / 2,
-                right: (bounds.right - bounds.left) / 2,
-              }}
-            ></div>
-          </>
-        )
-      )}
+      <div
+        className=" w-full h-full"
+        ref={tilesBoxRef}
+        style={{
+          transform: transform, // Apply translation
+          scale: scale, // Apply scaling
+          transition: "transform 0.3s ease, scale 0.3s ease", // Smooth transition
+        }}
+      >
+        {anchors.map(
+          ({ root, coordinates, canAccept, tile, tilt, scale, id }) => (
+            <>
+              <Anchor
+                key={id}
+                {...{
+                  root,
+                  coordinates,
+                  tile: { id, tile },
+                  tilt,
+                  canAccept,
+                  scale,
+                  initailSetAnchor,
+                  activeHover,
+                }}
+              />
+              <div
+                className="w-1 h-1 bg-red-900 absolute z-50"
+                style={{
+                  top: (bounds.bottom - bounds.top) / 2,
+                  right: (bounds.right - bounds.left) / 2,
+                }}
+              ></div>
+            </>
+          )
+        )}
+      </div>
       {defaultDrop && (
         <DropZone
           {...{

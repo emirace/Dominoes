@@ -171,7 +171,7 @@ const SocketController = {
       );
 
       const opponentId = playerId === 0 ? 1 : 0;
-      const hasWon = checkForWin(game, playerId);
+      const hasWon: boolean = checkForWin(game, playerId);
 
       if (hasWon) {
         const points = calculateOpponentTilesValue(game, playerId);

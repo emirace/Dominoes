@@ -32,6 +32,7 @@ const PlayerDeck: React.FC<PlayerDeckProps> = ({ anchors }) => {
   );
   const [revealed, setRevealed] = useState(false);
   const [points, setPoints] = useState(0);
+  const [transform, setTransform] = useState("");
 
   const canPlayStyles = canPlay ? "" : "opacity-80 pointer-events-none ";
 
@@ -91,11 +92,14 @@ const PlayerDeck: React.FC<PlayerDeckProps> = ({ anchors }) => {
     if (opponentWin) {
       setTimeout(() => {
         setRevealed(true);
+        setTransform(`translate(0px, -100px)`);
       }, 1000);
       setTimeout(() => {
+        setTransform(`translate(0px, -500px)`);
         setHand([]);
       }, 5000);
       setTimeout(() => {
+        setTransform(`translate(0px,0px)`);
         setRevealed(false);
       }, 5500);
     }
@@ -149,7 +153,7 @@ const PlayerDeck: React.FC<PlayerDeckProps> = ({ anchors }) => {
             key={tile?.id}
             style={{
               ...style,
-              transform: revealed ? `translate(0px, -100px)` : style.transform,
+              transform: revealed ? transform : style.transform,
             }}
           >
             <DeckTile {...{ tile, onDropComplete }} />

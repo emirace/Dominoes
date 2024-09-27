@@ -17,11 +17,12 @@ function GameOver() {
 
   useEffect(() => {
     if (gameOver) {
-      setIsVisible(true);
-      setWinner(gameOver.winner);
-      setLoser(gameOver.loser);
+      setTimeout(() => {
+        setIsVisible(true);
+        setWinner(gameOver.winner);
+        setLoser(gameOver.loser);
+      }, 5500);
     }
-    return setIsVisible(false);
   }, [gameOver]);
 
   console.log(gameOver);
@@ -61,7 +62,7 @@ function GameOver() {
           </div>
           <div className="flex items-center justify-between w-full mb-14">
             <div className="flex items-center gap-5">
-              <div className="bg-main-blue rounded-full py-1 px-2">1</div>
+              <div className="bg-main-blue rounded-full py-1 px-2">2</div>
               <div className="w-[30px] h-[30px]">
                 <Image
                   src="/default-avatar.png"

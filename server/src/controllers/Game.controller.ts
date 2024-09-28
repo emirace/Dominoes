@@ -89,16 +89,20 @@ const GameController = {
   }),
 
   getAllGames: asyncHandler(async (req, res) => {
-    // Find all games where the first player exists and the game is not active
     const games = await Game.find({
       'players.0': { $exists: true },
+      'players.1': { $exists: false },
       active: false,
     }).populate({
       path: 'players.user',
       select: '-tiles',
     });
 
-    return SuccessResponse(res, games, 'Rooms retrieved successfully');
+    return SuccessResponse(
+      res,
+      games,
+      'Rooms with one player retrieved successfully'
+    );
   }),
 };
 

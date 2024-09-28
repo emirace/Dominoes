@@ -66,6 +66,9 @@ io.on('connection', (socket) => {
   socket.on('pickFromBoneyard', ({ gameId }) => {
     SocketController.pickFromBoneyard(socket, gameId, socket.request.token);
   });
+  socket.on('updateBoard', ({ gameId, gameboardTile }) => {
+    SocketController.updateBoard(socket, gameId, gameboardTile);
+  });
   socket.on(
     'tilePlayed',
     ({ gameId, playerId, droppedTile, triggeredTile }) => {
@@ -80,6 +83,17 @@ io.on('connection', (socket) => {
   );
   socket.on('disconnect', () => {
     console.log(`${socket.id} has disconnected`);
+
+    const rooms = Object.keys(socket.rooms).filter(
+      (room) => room !== socket.id
+    );
+
+    for (const room of rooms) {
+      socket.leave(room);
+      console.log(`Socket ${socket.id} left room ${room}`);
+
+      io.to(room).emit('userLeft', { socketId: socket.id });
+    }
   });
   socket.on('leave', (room) => {
     console.log('leave', room);

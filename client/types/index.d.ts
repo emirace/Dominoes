@@ -1,3 +1,4 @@
+import { TileAlignSpec } from "@/utils/game-utils";
 import { numberPair } from "./index.d";
 import { RectReadOnly } from "react-use-measure";
 
@@ -98,12 +99,22 @@ export interface GameOver {
   loser: { user: User; score: number };
 }
 
+export interface ResumeGame {
+  boneyardCount: number;
+  opponentTilesCount: number;
+  gameboard: { currentTile: TileAlignSpec; tileConnectedTo: TileAlignSpec }[];
+  playerTiles: tileType[];
+  isTurn: true;
+}
+
 export interface GameContextType {
   draggedTile: tileType | null;
   setDraggedTile: React.Dispatch<React.SetStateAction<tileType | null>>;
   recentlyDroppedTile: React.MutableRefObject<tileType | null>;
   deck: numberPair[];
   isTurn: boolean;
+  resumeGame: ResumeGame | null;
+  setResumeGame: React.Dispatch<React.SetStateAction<ResumeGame | null>>;
   setIsTurn: (value: boolean) => void;
   firstPlayer: number;
   playerId: PlayerId;

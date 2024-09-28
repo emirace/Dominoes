@@ -24,6 +24,7 @@ export default function useDistributor(
       if (boundRef.current) {
         const bounds = boundRef.current.getBoundingClientRect();
         counterRef.current++;
+        console.log(deckType);
         if (deckType === requestType.OPPONENT_DECK) {
           const newHand = { id: 0, tile: [0, 0] as numberPair };
           setHand((prevArr) => [...prevArr, newHand]);
@@ -39,6 +40,7 @@ export default function useDistributor(
           } else {
             newHand = await selectFromBoneYardServer();
           }
+          console.log(newHand);
           setHand((preArr) => [...preArr, newHand]);
           setFrom([bounds.right - position[0], bounds.top - position[1]]);
           return newHand;

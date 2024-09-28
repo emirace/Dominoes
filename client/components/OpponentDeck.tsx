@@ -14,7 +14,7 @@ import { numberPair, tileType } from "@/types";
 import { useSocket } from "./SocketProvider";
 
 function OpponentDeck() {
-  const { oppenentPullFrom, opponentPlay, playerWin, opponentWin } =
+  const { oppenentPullFrom, opponentPlay, playerWin, opponentWin, resumeGame } =
     useGameContext();
   const [hand, setHand, from, boundRef, tileRequestApi] = useDistributor();
   const { socket } = useSocket();
@@ -102,6 +102,16 @@ function OpponentDeck() {
       };
     }
   }, [socket]);
+
+  useEffect(() => {
+    if (!resumeGame) return;
+    setHand(
+      Array.from({ length: resumeGame.opponentTilesCount }, () => ({
+        id: 0,
+        tile: [0, 0] as numberPair,
+      }))
+    );
+  }, [resumeGame]);
 
   return (
     <div

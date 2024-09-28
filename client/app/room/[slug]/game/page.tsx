@@ -43,6 +43,7 @@ function GamePage({ params }: { params: { slug: string } }) {
         setGame(data.data);
       })
       .catch((err) => {
+        console.log("error", err);
         toast.error("Game not found");
         setTimeout(() => router.push("/"), 2000);
       });
@@ -50,6 +51,7 @@ function GamePage({ params }: { params: { slug: string } }) {
 
   useEffect(() => {
     if (socket && playerId >= 0) {
+      console.log("Emit gamestart");
       socket.emit("startGame", { gameId: params.slug, playerId });
       return () => {
         socket.off("startGame");

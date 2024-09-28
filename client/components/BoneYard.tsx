@@ -17,6 +17,7 @@ function BoneYard() {
     setFirstPlayer,
     opponentWin,
     playerWin,
+    resumeGame,
   } = useGameContext();
   const { socket } = useSocket();
   const gridRef = useRef<HTMLDivElement | null>(null);
@@ -95,6 +96,27 @@ function BoneYard() {
   useEffect(() => {
     setTiles(Array.from({ length: 28 }, () => "unpicked"));
   }, [playerWin, opponentWin]);
+
+  useEffect(() => {
+    if (!resumeGame) return;
+
+    const { boneyardCount } = resumeGame;
+    const totalTiles = 28;
+
+    let newTiles = Array.from({ length: totalTiles }, () => "unpicked");
+
+    const pickedIndices = new Set<number>();
+
+    while (pickedIndices.size < totalTiles - boneyardCount) {
+      pickedIndices.add(Math.floor(Math.random() * totalTiles));
+    }
+
+    pickedIndices.forEach((index) => {
+      newTiles[index] = "picked";
+    });
+
+    setTiles(newTiles);
+  }, [resumeGame]);
 
   const handleSelectTile = async (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,

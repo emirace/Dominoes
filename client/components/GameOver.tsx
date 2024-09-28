@@ -25,8 +25,6 @@ function GameOver() {
     }
   }, [gameOver]);
 
-  console.log(gameOver);
-
   if (!isVisible) {
     return null;
   } else {

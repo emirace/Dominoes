@@ -16,6 +16,7 @@ import {
   PlayerId,
   userWin,
   GameOver,
+  ResumeGame,
 } from "@/types";
 import { useSocket } from "./SocketProvider";
 import { useParams, useRouter } from "next/navigation";
@@ -69,6 +70,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [playerWin, setPlayerWin] = useState<userWin | null>(null);
   const [opponentWin, setOpponentWin] = useState<userWin | null>(null);
   const [gameOver, setGameOver] = useState<GameOver | null>(null);
+  const [resumeGame, setResumeGame] = useState<ResumeGame | null>(null);
 
   const makeTile = (tiles: numberPair[]): tileType[] =>
     tiles.map((tile) => ({
@@ -78,6 +80,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   const selectFromBoneYard = () => {
     const index = Math.floor(Math.random() * distributeTile.current.length);
+    console.log("here", index);
     return distributeTile.current.splice(index, 1)[0];
   };
 
@@ -91,6 +94,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
           id: Number(`${pickedTile[0]}${pickedTile[1]}`),
           tile: pickedTile,
         };
+        console.log("tile", tile);
         resolve(tile as unknown as tileType);
       });
 
@@ -225,10 +229,35 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setFirstPlayer(-2);
       });
 
+      // Handle resuming game (loading existing state)
+      socket.on(
+        "resumeGame",
+        ({
+          gameboard,
+          playerTiles,
+          isTurn,
+          boneyardCount,
+          opponentTilesCount,
+        }) => {
+          console.log("resuming game 1");
+          setResumeGame({
+            gameboard,
+            playerTiles: makeTile(playerTiles),
+            boneyardCount,
+            opponentTilesCount,
+            isTurn,
+          });
+          setIsTurn(isTurn);
+          setCanPlay(isTurn);
+          // Set other game state data like boneyard and gameboard here
+        }
+      );
+
       return () => {
         socket.off("boneyard");
         socket.off("opponentPlayed");
         socket.off("userPlayed");
+        socket.off("resumeGame");
         socket.off("gameWon");
         socket.off("playerReady");
         socket.off("joinGameError");
@@ -260,6 +289,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setDraggedTile,
         recentlyDroppedTile,
         gameOver,
+        resumeGame,
+        setResumeGame,
         selectFromBoneYard,
         selectFromBoneYardServer,
         deck,

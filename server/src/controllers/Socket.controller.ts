@@ -47,25 +47,46 @@ const SocketController = {
 
   startGame: async (socket: Socket, gameId: string, playerId: number) => {
     try {
-      if (currentGames.includes(gameId)) {
-        return true;
-      }
-      currentGames.push(gameId);
-
       const game = await Game.findOne({ gameId });
 
       if (!game) {
         throw new Error('Game not found');
       }
 
-      let boneyard = generateBoneyard();
+      // If the game is already in progress, resume it
+      if (game.active && game.gameData && game.gameData.gameboard.length > 0) {
+        // for (const room of socket.rooms) {
+        //   if (room !== socket.id) {
+        //     socket.leave(room);
+        //   }
+        // }
 
+        // await socket.join(gameId);
+        socket.emit('resumeGame', {
+          gameboard: game.gameData.gameboard,
+          boneyardCount: game.gameData.boneyard.length,
+          playerTiles: game.players[playerId].tiles,
+          opponentTilesCount: game.players[1 - playerId].tiles.length,
+          isTurn: game.turn === playerId,
+        });
+
+        return true;
+      }
+
+      // If game is not in progress, start a new game
+      if (currentGames.includes(gameId)) {
+        return true;
+      }
+
+      currentGames.push(gameId);
+
+      let boneyard = generateBoneyard();
       const player1Choices: number[] = [];
       const player2Choices: number[] = [];
 
+      // Distribute tiles to players
       while (player1Choices.length < 7 || player2Choices.length < 7) {
         const random = Math.floor(Math.random() * 28);
-
         if (
           player1Choices.length < 7 &&
           !player2Choices.includes(random) &&
@@ -115,13 +136,12 @@ const SocketController = {
         });
       }, 500);
 
+      // Save the new game state
       if (game) {
         game.gameData.boneyard = boneyard;
         game.gameData.gameboard = [];
-
         game.players[0].tiles = player1Tiles;
         game.players[1].tiles = player2Tiles;
-
         game.turn = turn === 0 ? 0 : 1;
         await game.save();
       }
@@ -199,6 +219,7 @@ const SocketController = {
 
           // Set game as inactive
           game.active = false;
+          await game.save();
         } else {
           const index = currentGames.indexOf(gameId);
           if (index !== -1) {
@@ -213,6 +234,9 @@ const SocketController = {
             tiles: game.players[playerId].tiles,
             points,
           });
+          game.gameData.gameboard = [];
+          game.gameData.boneyard = [];
+
           await game.save();
 
           setTimeout(() => {
@@ -222,13 +246,13 @@ const SocketController = {
       } else {
         // Switch turn to opponent
         game.turn = opponentId;
+        await game.save();
         socket.emit('userPlayed');
         socket.broadcast.emit('opponentPlayed', {
           tile: droppedTile,
           gameboard,
           isTurn: game.turn !== playerId,
         });
-        await game.save();
       }
 
       return true;
@@ -358,6 +382,52 @@ const SocketController = {
       io.emit('gameUpdated', { game });
 
       return true;
+    } catch (err: any) {
+      throw new Error(err.message);
+    }
+  },
+
+  updateBoard: async (
+    socket: Socket,
+    gameId: string,
+    gameboardTile: {
+      currentTile: TileClassSpec;
+      tileConnectedTo: TileClassSpec;
+    }
+  ) => {
+    try {
+      const game = await Game.findOne({ gameId });
+
+      if (!game) {
+        throw new Error('Game not found');
+      }
+
+      console.log(gameboardTile.currentTile);
+      const gameboard = game.gameData.gameboard;
+
+      const existingTileIndex = gameboard.findIndex(
+        (tile) => tile.currentTile.id === gameboardTile.currentTile.id
+      );
+
+      if (existingTileIndex !== -1) {
+        gameboard[existingTileIndex] = gameboardTile;
+      } else {
+        gameboard.push(gameboardTile);
+      }
+
+      const updatedGame = await Game.findOneAndUpdate(
+        { gameId },
+        { $set: { 'gameData.gameboard': gameboard } },
+        { new: true }
+      );
+
+      if (!updatedGame) {
+        throw new Error(
+          'Game was modified by another process. Please refresh.'
+        );
+      }
+
+      socket.emit('gameUpdated', { game: updatedGame });
     } catch (err: any) {
       throw new Error(err.message);
     }

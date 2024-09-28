@@ -26,6 +26,7 @@ const PlayerDeck: React.FC<PlayerDeckProps> = ({ anchors }) => {
     setBoneYardDistSpec,
     opponentWin,
     playerWin,
+    resumeGame,
   } = useGameContext();
   const [hand, setHand, from, boundRef, tileRequestApi] = useDistributor(
     requestType.MAIN_DECK
@@ -110,6 +111,11 @@ const PlayerDeck: React.FC<PlayerDeckProps> = ({ anchors }) => {
       setPoints((prev) => prev + playerWin.points);
     }
   }, [playerWin]);
+
+  useEffect(() => {
+    if (!resumeGame) return;
+    setHand(resumeGame?.playerTiles);
+  }, [resumeGame]);
 
   function checkPlayerDeckMatches(
     playerDeck: tileType[],

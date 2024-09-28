@@ -18,7 +18,8 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
   const [playBoardRef, bounds] = useMeasure();
   const [tilesBoxRef, tilesBound] = useMeasure();
   const { socket } = useSocket();
-  const { playerId, opponentWin, playerWin } = useGameContext();
+  const { playerId, opponentWin, playerWin, resumeGame, setResumeGame } =
+    useGameContext();
   const { slug: gameId } = useParams();
   const activeHover = useRef<number | null>(null);
   const droppedTile = useRef<number | null>(null);
@@ -132,6 +133,14 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
           root.coordinates = [midX, midY];
           root.scale = 1;
           root.tilt = root.tile[0] === root.tile[1] ? 0 : 90;
+          if (socket) {
+            socket.emit("updateBoard", {
+              gameboardTile: {
+                currentTile: root,
+              },
+              gameId,
+            });
+          }
           return root;
         })
       );
@@ -141,6 +150,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
         const triggeredAnchor = anchors.find(
           (anchor) => anchor.id === droppedOn.current
         );
+        console.log(droppedTile.current);
         const droppedAnchorIndex = anchors.findIndex(
           (anchor) => anchor.id === droppedTile.current
         );
@@ -152,10 +162,19 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
             newArr[droppedAnchorIndex] = newDroppedAnchor;
             return newArr;
           });
+          if (socket) {
+            socket.emit("updateBoard", {
+              gameboardTile: {
+                currentTile: newDroppedAnchor,
+                tileConnectedTo: triggeredAnchor,
+              },
+              gameId,
+            });
+          }
         }
       }
     }
-  }, [anchors.length]);
+  }, [anchors.length, socket, gameId]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -182,7 +201,46 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
         clearTimeout(timeoutId);
       };
     }
-  }, [opponentWin, , playerWin]);
+  }, [opponentWin, playerWin]);
+
+  useEffect(() => {
+    if (!resumeGame || !resumeGame.gameboard.length) return;
+
+    const { gameboard } = resumeGame;
+    let index = 0;
+
+    console.log("gameboard 22", gameboard);
+
+    const intervalId = setInterval(() => {
+      if (index >= gameboard.length) {
+        // Once done setting all anchors, clear the interval and reset the resumeGame state
+        clearInterval(intervalId);
+        setResumeGame(null);
+        return;
+      }
+      console.log("currentIndex", index, gameboard[index]);
+      const tile = {
+        id: gameboard[index].currentTile.id,
+        tile: gameboard[index].currentTile.tile,
+      };
+      const [midX, midY] = getBoardCenter();
+      const newTile = new TileAlignSpec(tile, [midX, midY]);
+      droppedTile.current = tile.id;
+      if (index > 0) {
+        droppedOn.current = gameboard[index].tileConnectedTo.id;
+      }
+
+      setAnchors((prevAnchors) => {
+        const updatedAnchors = [...prevAnchors, newTile];
+        return updatedAnchors;
+      });
+
+      index++;
+    }, 500); // Adjust interval duration as needed (e.g., 500ms)
+
+    // Cleanup interval on unmount or when resumeGame changes
+    return () => clearInterval(intervalId);
+  }, [resumeGame]);
 
   const registerDrop = (count: number) => {
     if (count !== 0) setDefaultDrop(false);
@@ -204,30 +262,32 @@ const GameBoard: React.FC<GameBoardProps> = ({ anchors, setAnchors }) => {
         }}
       >
         {anchors.map(
-          ({ root, coordinates, canAccept, tile, tilt, scale, id }) => (
-            <>
-              <Anchor
-                key={id}
-                {...{
-                  root,
-                  coordinates,
-                  tile: { id, tile },
-                  tilt,
-                  canAccept,
-                  scale,
-                  initailSetAnchor,
-                  activeHover,
-                }}
-              />
-              <div
-                className="w-1 h-1 bg-red-900 absolute z-50"
-                style={{
-                  top: (bounds.bottom - bounds.top) / 2,
-                  right: (bounds.right - bounds.left) / 2,
-                }}
-              ></div>
-            </>
-          )
+          ({ root, coordinates, canAccept, tile, tilt, scale, id }) => {
+            return (
+              <>
+                <Anchor
+                  key={id}
+                  {...{
+                    root,
+                    coordinates,
+                    tile: { id, tile },
+                    tilt,
+                    canAccept,
+                    scale,
+                    initailSetAnchor,
+                    activeHover,
+                  }}
+                />
+                <div
+                  className="w-1 h-1 bg-red-900 absolute z-50"
+                  style={{
+                    top: (bounds.bottom - bounds.top) / 2,
+                    right: (bounds.right - bounds.left) / 2,
+                  }}
+                ></div>
+              </>
+            );
+          }
         )}
       </div>
       {defaultDrop && (

@@ -414,10 +414,17 @@ const SocketController = {
       } else {
         gameboard.push(gameboardTile);
       }
-
       const updatedGame = await Game.findOneAndUpdate(
-        { gameId },
-        { $set: { 'gameData.gameboard': gameboard } },
+        {
+          gameId,
+          $or: [
+            { 'gameData.gameboard': { $ne: [] } },
+            { 'gameData.boneyard': { $ne: [] } },
+          ],
+        }, // Check if gameboard or boneyard is not empty
+        {
+          $set: { 'gameData.gameboard': gameboard },
+        },
         { new: true }
       );
 
